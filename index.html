@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>2TIP — Strona klasowa (panel)</title>
+<link rel="icon" href="data:," />
+<style>
+  /* -------- Vars & base -------- */
+  :root{
+    --bg-0:#060714;
+    --bg-1:#0f1724;
+    --card: rgba(255,255,255,0.03);
+    --glass: rgba(255,255,255,0.02);
+    --accent1:#7c3aed; /* fiolet */
+    --accent2:#06b6d4; /* niebieski */
+    --text:#e6eef8;
+    --muted:#98a0b3;
+    --success:#10b981;
+    --danger:#ef4444;
+    --radius:12px;
+    --shadow: 0 10px 30px rgba(2,6,23,0.6);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:
+      radial-gradient(700px 500px at 10% 10%, rgba(124,58,237,0.09), transparent),
+      radial-gradient(700px 500px at 90% 90%, rgba(6,182,212,0.06), transparent),
+      linear-gradient(180deg,var(--bg-0),var(--bg-1));
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px;
+    gap:20px;
+  }
+
+  /* -------- App layout -------- */
+  .app {
+    width:100%;
+    max-width:1200px;
+    display:grid;
+    grid-template-columns: 260px 1fr;
+    gap:20px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+    border-radius:18px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+
+  aside {
+    padding:20px;
+    border-right:1px solid rgba(255,255,255,0.03);
+    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+  }
+  .brand{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+  .logo {
+    width:56px;height:56px;border-radius:12px;
+    background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:18px;
+    box-shadow:0 8px 30px rgba(124,58,237,0.14);
+  }
+  .brand h1{margin:0;font-size:16px}
+  .brand p{margin:0;font-size:13px;color:var(--muted)}
+
+  nav ul{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-direction:column;gap:10px}
+  nav button{
+    display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:0;background:transparent;color:var(--text);
+    cursor:pointer;font-weight:700;text-align:left;font-size:14px;
+  }
+  nav button:hover{background:rgba(255,255,255,0.02)}
+  nav button.active{background:linear-gradient(90deg, rgba(124,58,237,0.18), rgba(6,182,212,0.08));box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
+
+  .status-card{margin-top:18px;padding:12px;border-radius:12px;background:var(--glass);border:1px solid rgba(255,255,255,0.02)}
+  .small{font-size:13px;color:var(--muted)}
+
+  /* main */
+  main{padding:22px;overflow:auto}
+  header.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  header .title{font-size:18px;margin:0}
+  header .subtitle{margin:2px 0 0;color:var(--muted);font-size:13px}
+
+  .card{
+    background:var(--card);
+    padding:16px;border-radius:var(--radius);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.01);
+    margin-bottom:18px;
+  }
+
+  /* forms */
+  form{display:grid;gap:10px}
+  input,select,textarea{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;color:var(--text);outline:none}
+  input:focus,textarea:focus,select:focus{border-color:rgba(124,58,237,0.6);box-shadow:0 8px 30px rgba(124,58,237,0.05)}
+  .btn{
+    display:inline-block;padding:10px 14px;border-radius:10px;border:0;font-weight:800;color:white;background:linear-gradient(90deg,var(--accent1),var(--accent2));cursor:pointer;
+    transition:transform .12s ease,opacity .12s;
+  }
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+  .btn:hover{transform:translateY(-2px)}
+  .muted{color:var(--muted)}
+
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{padding:8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px}
+  th{color:var(--muted);font-weight:700;font-size:13px}
+
+  /* timetable editable */
+  .timetable{width:100%;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+  .timetable td[contenteditable]{cursor:text;background:rgba(255,255,255,0.01)}
+  .timetable td:hover{background:rgba(255,255,255,0.01)}
+
+  /* admin tabs */
+  .admin-tabs{display:flex;gap:8px;margin-bottom:12px}
+  .tab{padding:10px 12px;border-radius:10px;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.02);font-weight:700}
+  .tab.active{background:linear-gradient(90deg, rgba(124,58,237,0.18), rgba(6,182,212,0.06))}
+
+  /* avatar */
+  .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;overflow:hidden}
+  .avatar img{width:100%;height:100%;object-fit:cover}
+
+  /* responsive */
+  @media (max-width:980px){
+    .app{grid-template-columns:1fr; padding:14px;}
+    aside{order:2;border-right:0;border-top:1px solid rgba(255,255,255,0.03)}
+  }
+
+  /* theme variants (simple) */
+  body.theme-light{
+    --bg-0:#f6f7fb; --bg-1:#eef2fb; --card:rgba(2,6,23,0.03); --text:#0b1220; --muted:#4b5563;
+  }
+
+  /* small helpers */
+  .flex{display:flex;gap:10px;align-items:center}
+  .center{display:flex;align-items:center;justify-content:center}
+</style>
+</head>
+<body>
+<div class="app" role="application">
+  <aside>
+    <div class="brand">
+      <div class="logo">2T</div>
+      <div>
+        <h1>2TIP — Klasa</h1>
+        <p class="small">Panel uczniów i admina</p>
+      </div>
+    </div>
+
+    <nav aria-label="Główna nawigacja">
+      <ul>
+        <li><button id="nav-login" class="active">Logowanie / Rejestracja</button></li>
+        <li><button id="nav-timetable" style="display:none">Plan lekcji</button></li>
+        <li><button id="nav-students" style="display:none">Uczniowie</button></li>
+        <li><button id="nav-settings" style="display:none">Ustawienia</button></li>
+        <li><button id="nav-admin" style="display:none">Panel administratora</button></li>
+        <li><button id="nav-about" style="display:none">O klasie</button></li>
+        <li><button id="nav-logout" style="display:none">Wyloguj</button></li>
+      </ul>
+    </nav>
+
+    <div class="status-card card" id="status-box">
+      <div class="small">Nie jesteś zalogowany</div>
+    </div>
+
+  </aside>
+
+  <main>
+    <header class="top">
+      <div>
+        <h2 class="title" id="page-title">Logowanie / Rejestracja</h2>
+        <div class="subtitle" id="page-sub">Zaloguj się lub zarejestruj — admin zatwierdza nowe konta.</div>
+      </div>
+      <div class="flex">
+        <div id="welcome-text" class="small muted">Nie zalogowano</div>
+        <div id="user-controls"></div>
+      </div>
+    </header>
+
+    <!-- LOGIN + REGISTER -->
+    <section id="panel-login" class="card">
+      <div style="display:flex;gap:18px;flex-wrap:wrap">
+        <div style="flex:1;min-width:260px">
+          <h3>Logowanie</h3>
+          <form id="form-login">
+            <input id="login-username" placeholder="Nazwa użytkownika" required />
+            <input id="login-password" type="password" placeholder="Hasło" required />
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <button class="btn" type="submit">Zaloguj</button>
+              <button class="btn ghost" type="button" id="btn-show-register">Rejestracja</button>
+            </div>
+            <div class="small muted" id="login-msg"></div>
+          </form>
+        </div>
+
+        <div style="flex:1;min-width:260px">
+          <h3>Rejestracja</h3>
+          <form id="form-register">
+            <input id="reg-username" placeholder="Nazwa użytkownika (unikalna)" required />
+            <input id="reg-fullname" placeholder="Imię i nazwisko" required />
+            <select id="reg-class">
+              <option value="2TIP">2TIP</option>
+            </select>
+            <input id="reg-password" type="password" placeholder="Hasło (min 6 znaków)" required />
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <button class="btn" type="submit">Zarejestruj</button>
+              <button class="btn ghost" type="button" id="btn-clear-register">Wyczyść</button>
+            </div>
+            <div class="small muted" id="reg-msg" style="margin-top:6px"></div>
+          </form>
+        </div>
+      </div>
+      <div style="margin-top:12px" class="small muted">Po rejestracji konto będzie oczekiwać na zatwierdzenie przez administratora.</div>
+    </section>
+
+    <!-- TIMETABLE -->
+    <section id="panel-timetable" class="card" style="display:none">
+      <h3>Plan lekcji — 2TIP</h3>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="flex:1">
+          <table class="timetable" id="timetable-table">
+            <thead>
+              <tr><th>Godz.</th><th>Pon</th><th>Wt</th><th>Śr</th><th>Czw</th><th>Pt</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div id="timetable-controls" style="width:320px">
+          <div class="small muted">Edycja planu (tylko admin)</div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn" id="btn-add-row">Dodaj godzinę</button>
+            <button class="btn ghost" id="btn-reset-timetable">Przywróć domyślny</button>
+          </div>
+          <div class="small muted" style="margin-top:10px">Kliknij komórkę aby edytować; zmiany zapisują się automatycznie.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDENTS -->
+    <section id="panel-students" class="card" style="display:none">
+      <h3>Uczniowie</h3>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+        <input id="search-students" placeholder="Szukaj po nazwie lub loginie" style="flex:1"/>
+        <div class="small muted">Ilość uczniów: <span id="students-count">0</span></div>
+      </div>
+      <table id="students-table">
+        <thead><tr><th>Awatar</th><th>Login</th><th>Imię i nazwisko</th><th>Klasa</th><th>Rola</th><th>Akcje</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="panel-settings" class="card" style="display:none">
+      <h3>Ustawienia konta</h3>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+        <div class="avatar" id="settings-avatar-preview">U</div>
+        <div>
+          <label class="small muted">Zmień awatar</label><br>
+          <input id="avatar-file" type="file" accept="image/*">
+          <div class="small muted">Plik max 2MB — zapis lokalny.</div>
+        </div>
+      </div>
+
+      <div style="display:grid;gap:8px;max-width:520px">
+        <label class="small muted">Imię i nazwisko</label>
+        <input id="settings-fullname" placeholder="Imię i nazwisko">
+
+        <label class="small muted">Zmień hasło</label>
+        <input id="settings-current-pass" type="password" placeholder="Aktualne hasło">
+        <input id="settings-new-pass" type="password" placeholder="Nowe hasło (min 6 znaków)">
+        <div style="display:flex;gap:8px">
+          <button class="btn" id="btn-change-pass">Zmień hasło</button>
+          <button class="btn ghost" id="btn-reset-avatar">Resetuj awatar</button>
+        </div>
+
+        <label class="small muted">Motyw</label>
+        <select id="settings-theme">
+          <option value="default">Ciemny (domyślny)</option>
+          <option value="light">Jasny</option>
+        </select>
+        <div style="display:flex;gap:8px">
+          <button class="btn" id="btn-save-theme">Zapisz motyw</button>
+          <button class="btn ghost" id="btn-reset-theme">Przywróć domyślny</button>
+        </div>
+        <div class="small muted" id="settings-msg"></div>
+      </div>
+    </section>
+
+    <!-- ADMIN PANEL (same page, clean tabs) -->
+    <section id="panel-admin" class="card" style="display:none">
+      <h3>Panel administratora</h3>
+      <div class="muted small">Szybkie zarządzanie klasą</div>
+
+      <div style="margin-top:12px" class="admin-tabs">
+        <div class="tab active" data-tab="admin-students-tab">📋 Uczniowie</div>
+        <div class="tab" data-tab="admin-timetable-tab">🕒 Plan lekcji</div>
+        <div class="tab" data-tab="admin-pending-tab">🔔 Powiadomienia</div>
+      </div>
+
+      <div id="admin-students-tab" class="admin-tab-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="small muted">Zarządzaj kontami uczniów</div>
+          <div>
+            <button class="btn" id="admin-add-sample">Dodaj przykładowe konto</button>
+          </div>
+        </div>
+        <div class="card">
+          <table id="admin-users-table">
+            <thead><tr><th>Login</th><th>Imię</th><th>Klasa</th><th>Akcje</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="admin-timetable-tab" class="admin-tab-content" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="small muted">Edytuj plan lekcji dla klasy 2TIP</div>
+          <div>
+            <button class="btn" id="admin-save-timetable">Zapisz zmiany</button>
+            <button class="btn ghost" id="admin-reset-timetable">Przywróć domyślny</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="small muted">Kliknij w komórkę by edytować, Enter aby zatwierdzić.</div>
+          <div style="margin-top:10px">
+            <table class="timetable" id="admin-timetable-table">
+              <thead><tr><th>Godz.</th><th>Pon</th><th>Wt</th><th>Śr</th><th>Czw</th><th>Pt</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="admin-pending-tab" class="admin-tab-content" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="small muted">Nowe rejestracje oczekujące</div>
+        </div>
+        <div class="card">
+          <div id="admin-pending-list"></div>
+          <div class="small muted" id="admin-pending-empty" style="display:none">Brak oczekujących zgłoszeń.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="panel-about" class="card" style="display:none">
+      <h3>O klasie 2TIP</h3>
+      <p class="muted">Tutaj możesz dodać opisy, linki do materiałów i terminarz wydarzeń.</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+/* -------------------- LOGIKA APLIKACJI -------------------- */
+(async function(){
+  // keys
+  const USERS_KEY = '2tip_users_v2';
+  const PENDING_KEY = '2tip_pending_v2';
+  const TIMETABLE_KEY = '2tip_timetable_v2';
+  const SESSION_KEY = '2tip_session_v2';
+
+  // helpers
+  const $ = id => document.getElementById(id);
+  const nowISO = ()=> new Date().toISOString();
+
+  async function hashPassword(password){
+    const enc = new TextEncoder();
+    const data = enc.encode(password);
+    const buf = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  function loadUsers(){ try{ return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }catch(e){return []} }
+  function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
+  function loadPending(){ try{ return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); }catch(e){return []} }
+  function savePending(p){ localStorage.setItem(PENDING_KEY, JSON.stringify(p)); }
+  function loadTimetable(){ try{ return JSON.parse(localStorage.getItem(TIMETABLE_KEY)); }catch(e){return null} }
+  function saveTimetable(t){ localStorage.setItem(TIMETABLE_KEY, JSON.stringify(t)); }
+
+  // default timetable (grid with hours)
+  const defaultTimetable = {
+    slots: [
+      {time:'8:00-8:45', pon:'J. polski', wt:'Matematyka', sr:'Fizyka', czw:'WF', pt:'Informatyka'},
+      {time:'8:55-9:40', pon:'Matematyka', wt:'J. angielski', sr:'Chemia', czw:'BHP', pt:'Historia'},
+      {time:'9:50-10:35', pon:'Informatyka', wt:'Fizyka', sr:'J. polski', czw:'Matematyka', pt:'Technologia'},
+      {time:'10:55-11:40', pon:'WF', wt:'Historia', sr:'J. angielski', czw:'Geografia', pt:'Biologia'}
+    ]
+  };
+
+  // ensure admin account exists
+  async function ensureAdmin(){
+    let users = loadUsers();
+    if(!users.some(u=>u.username === 'admin')){
+      const ph = await hashPassword('Admin!234');
+      users.push({
+        id:'u-admin',
+        username:'admin',
+        fullname:'Administrator',
+        class:'admin',
+        isAdmin:true,
+        passwordHash:ph,
+        avatarData:null,
+        theme:'default',
+        createdAt: nowISO()
+      });
+      saveUsers(users);
+    }
+  }
+  await ensureAdmin();
+
+  // session
+  let currentUser = null;
+  function loadSession(){
+    try{
+      const s = sessionStorage.getItem(SESSION_KEY);
+      if(!s) return;
+      const obj = JSON.parse(s);
+      if(!obj || !obj.username) return;
+      const users = loadUsers();
+      const found = users.find(u=>u.username === obj.username);
+      if(found) currentUser = found;
+    }catch(e){}
+  }
+  loadSession();
+
+  // UI elements
+  const navLogin = $('nav-login'), navTimetable = $('nav-timetable'), navStudents = $('nav-students'), navSettings = $('nav-settings'), navAdmin = $('nav-admin'), navAbout = $('nav-about'), navLogout = $('nav-logout');
+  const panelLogin = $('panel-login'), panelTimetable = $('panel-timetable'), panelStudents = $('panel-students'), panelSettings = $('panel-settings'), panelAdmin = $('panel-admin'), panelAbout = $('panel-about');
+  const pageTitle = $('page-title'), pageSub = $('page-sub');
+  const statusBox = $('status-box'), welcomeText = $('welcome-text'), userControls = $('user-controls');
+
+  // basic nav show/hide
+  function setActiveNav(btn){
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+  }
+  function hideAllPanels(){
+    [panelLogin, panelTimetable, panelStudents, panelSettings, panelAdmin, panelAbout].forEach(p => { if(p) p.style.display='none'; });
+  }
+  function showPanel(panel){
+    hideAllPanels();
+    panel.style.display = 'block';
+  }
+
+  function updateNavVisibility(){
+    const logged = !!currentUser;
+    navLogin.style.display = logged ? 'none' : 'block';
+    navTimetable.style.display = logged ? 'block' : 'none';
+    navStudents.style.display = logged ? 'block' : 'none';
+    navSettings.style.display = logged ? 'block' : 'none';
+    navAbout.style.display = logged ? 'block' : 'none';
+    navLogout.style.display = logged ? 'block' : 'none';
+    navAdmin.style.display = (logged && currentUser && currentUser.isAdmin) ? 'block' : 'none';
+    updateStatusCard();
+    updateStudentsTable();
+    updatePendingBadge();
+  }
+
+  function updateStatusCard(){
+    statusBox.innerHTML = '';
+    if(currentUser){
+      const wrapper = document.createElement('div'); wrapper.style.display='flex';wrapper.style.gap='10px';wrapper.style.alignItems='center';
+      const avat = document.createElement('div'); avat.className='avatar';
+      if(currentUser.avatarData){ const img = document.createElement('img'); img.src = currentUser.avatarData; avat.appendChild(img); } else { avat.textContent = (currentUser.fullname||currentUser.username||'U').slice(0,2).toUpperCase(); }
+      wrapper.appendChild(avat);
+      const txt = document.createElement('div'); txt.innerHTML = `<div style="font-weight:700">${currentUser.fullname || currentUser.username}</div><div class="small muted">${currentUser.username} · ${currentUser.class}</div>`;
+      wrapper.appendChild(txt);
+      statusBox.appendChild(wrapper);
+
+      welcomeText.textContent = `Witaj, ${currentUser.fullname || currentUser.username}`;
+      userControls.innerHTML = '';
+      const logoutBtn = document.createElement('button'); logoutBtn.className='btn ghost'; logoutBtn.textContent='Wyloguj';
+      logoutBtn.onclick = ()=> { currentUser = null; sessionStorage.removeItem(SESSION_KEY); updateNavVisibility(); showPanel(panelLogin); setActiveNav(navLogin); };
+      userControls.appendChild(logoutBtn);
+      if(currentUser.isAdmin){
+        const adminBtn = document.createElement('button'); adminBtn.className='btn'; adminBtn.textContent='Panel admina';
+        adminBtn.onclick = ()=>{ setActiveNav(navAdmin); showPanel(panelAdmin); openAdminTab('admin-students-tab'); };
+        userControls.appendChild(adminBtn);
+      }
+      // apply theme
+      if(currentUser.theme && currentUser.theme === 'light'){ document.body.classList.add('theme-light'); } else { document.body.classList.remove('theme-light'); }
+    } else {
+      statusBox.innerHTML = '<div class="small">Nie jesteś zalogowany</div>';
+      welcomeText.textContent = 'Nie zalogowano';
+      userControls.innerHTML = '';
+      document.body.classList.remove('theme-light');
+    }
+  }
+
+  // NAV handlers
+  navLogin.addEventListener('click', ()=>{ setActiveNav(navLogin); showPanel(panelLogin); pageTitle.textContent='Logowanie / Rejestracja'; pageSub.textContent='Zaloguj się lub zarejestruj.'; });
+  navTimetable.addEventListener('click', ()=>{ setActiveNav(navTimetable); showPanel(panelTimetable); pageTitle.textContent='Plan lekcji'; pageSub.textContent='Plan klasy 2TIP'; renderTimetable(); });
+  navStudents.addEventListener('click', ()=>{ setActiveNav(navStudents); showPanel(panelStudents); pageTitle.textContent='Uczniowie'; pageSub.textContent='Lista uczniów'; updateStudentsTable(); });
+  navSettings.addEventListener('click', ()=>{ setActiveNav(navSettings); showPanel(panelSettings); pageTitle.textContent='Ustawienia'; pageSub.textContent='Twoje ustawienia'; populateSettings(); });
+  navAdmin.addEventListener('click', ()=>{ setActiveNav(navAdmin); showPanel(panelAdmin); pageTitle.textContent='Panel administratora'; pageSub.textContent='Szybkie zarządzanie'; updateAdminUI(); openAdminTab('admin-students-tab'); });
+  navAbout.addEventListener('click', ()=>{ setActiveNav(navAbout); showPanel(panelAbout); pageTitle.textContent='O klasie'; pageSub.textContent='Informacje'; });
+  navLogout.addEventListener('click', ()=>{ currentUser = null; sessionStorage.removeItem(SESSION_KEY); updateNavVisibility(); showPanel(panelLogin); setActiveNav(navLogin); });
+
+  // LOGIN
+  $('form-login').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const user = $('login-username').value.trim();
+    const pass = $('login-password').value;
+    if(!user || !pass){ $('login-msg').textContent = 'Wypełnij pola.'; return; }
+    const users = loadUsers();
+    const found = users.find(u=>u.username.toLowerCase() === user.toLowerCase());
+    if(!found){ $('login-msg').textContent = 'Nie znaleziono użytkownika (może oczekuje na zatwierdzenie).'; return; }
+    const ph = await hashPassword(pass);
+    if(ph !== found.passwordHash){ $('login-msg').textContent = 'Błędne hasło.'; return; }
+    currentUser = found;
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({username: currentUser.username}));
+    $('login-password').value = '';
+    $('login-msg').textContent = '';
+    updateNavVisibility();
+    updateStatusCard();
+    setActiveNav(navTimetable);
+    showPanel(panelTimetable);
+    renderTimetable();
+  });
+
+  // REGISTER -> add to pending
+  $('form-register').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const username = $('reg-username').value.trim();
+    const fullname = $('reg-fullname').value.trim();
+    const klass = $('reg-class').value;
+    const pass = $('reg-password').value;
+    if(!username || !fullname || !pass){ $('reg-msg').textContent = 'Uzupełnij wszystkie pola.'; return; }
+    if(pass.length < 6){ $('reg-msg').textContent = 'Hasło musi mieć min 6 znaków.'; return; }
+    const users = loadUsers();
+    const pending = loadPending();
+    if(users.some(u=>u.username.toLowerCase()===username.toLowerCase()) || pending.some(p=>p.username.toLowerCase()===username.toLowerCase())){
+      $('reg-msg').textContent = 'Nazwa użytkownika zajęta lub oczekuje na zatwierdzenie.'; return;
+    }
+    const ph = await hashPassword(pass);
+    pending.push({ id:'p-'+Date.now(), username, fullname, class:klass, passwordHash:ph, createdAt:nowISO() });
+    savePending(pending);
+    $('reg-msg').textContent = 'Zarejestrowano — konto oczekuje na zatwierdzenie.';
+    $('form-register').reset();
+    updatePendingBadge();
+  });
+
+  $('btn-clear-register').addEventListener('click', ()=>{ $('reg-username').value=''; $('reg-fullname').value=''; $('reg-password').value=''; $('reg-msg').textContent=''; });
+
+  // TIMETABLE rendering (user view)
+  function renderTimetable(){
+    const tb = $('timetable-table');
+    if(!tb) return;
+    const body = tb.querySelector('tbody');
+    body.innerHTML = '';
+    const t = loadTimetable() || defaultTimetable;
+    t.slots.forEach(slot=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${slot.time}</td><td>${slot.pon}</td><td>${slot.wt}</td><td>${slot.sr}</td><td>${slot.czw}</td><td>${slot.pt}</td>`;
+      body.appendChild(tr);
+    });
+    // admin edit visibility
+    const controls = $('timetable-controls');
+    if(currentUser && currentUser.isAdmin){ controls.style.display = 'block'; } else { controls.style.display = 'none'; }
+  }
+
+  // ADMIN: render editable timetable (same structure but editable)
+  function renderAdminTimetable(editable=true){
+    const table = $('admin-timetable-table');
+    const body = table.querySelector('tbody');
+    body.innerHTML = '';
+    const t = loadTimetable() || defaultTimetable;
+    t.slots.forEach((slot, rowIdx)=>{
+      const tr = document.createElement('tr');
+      const tdTime = document.createElement('td'); tdTime.textContent = slot.time; tr.appendChild(tdTime);
+
+      ['pon','wt','sr','czw','pt'].forEach(dayKey=>{
+        const td = document.createElement('td');
+        td.textContent = slot[dayKey] || '';
+        if(editable){
+          td.setAttribute('contenteditable','true');
+          td.addEventListener('keydown', (ev)=>{
+            if(ev.key === 'Enter'){ ev.preventDefault(); ev.target.blur(); }
+          });
+          td.addEventListener('blur', ()=> saveAdminTimetableFromTable());
+        }
+        tr.appendChild(td);
+      });
+
+      body.appendChild(tr);
+    });
+  }
+
+  // save admin timetable by reading admin table DOM
+  function saveAdminTimetableFromTable(){
+    const table = $('admin-timetable-table');
+    const body = table.querySelector('tbody');
+    const newSlots = [];
+    for(let i=0;i<body.rows.length;i++){
+      const r = body.rows[i];
+      const cols = Array.from(r.cells).map(c=>c.textContent.trim());
+      newSlots.push({ time: cols[0] || '', pon:cols[1]||'', wt:cols[2]||'', sr:cols[3]||'', czw:cols[4]||'', pt:cols[5]||'' });
+    }
+    saveTimetable({ slots: newSlots });
+    renderTimetable(); // update user view
+  }
+  // wrapper used on blur to throttle saves
+  let saveTimeout = null;
+  function saveAdminTimetableFromTableDebounced(){
+    if(saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(saveAdminTimetableFromTable, 350);
+  }
+  // replace the above usage: attach blur to call debounced
+  function saveAdminTimetableFromTable(){ // override: immediate
+    const table = $('admin-timetable-table');
+    if(!table) return;
+    const body = table.querySelector('tbody');
+    const newSlots = [];
+    for(let i=0;i<body.rows.length;i++){
+      const r = body.rows[i];
+      const cols = Array.from(r.cells).map(c=>c.textContent.trim());
+      newSlots.push({ time: cols[0] || '', pon:cols[1]||'', wt:cols[2]||'', sr:cols[3]||'', czw:cols[4]||'', pt:cols[5]||'' });
+    }
+    saveTimetable({ slots: newSlots });
+    renderTimetable(); // update user view
+  }
+
+  // Admin add row
+  $('btn-add-row').addEventListener('click', ()=>{
+    if(!currentUser || !currentUser.isAdmin){ alert('Tylko admin.'); return; }
+    const t = loadTimetable() || defaultTimetable;
+    t.slots.push({ time:'nowa', pon:'', wt:'', sr:'', czw:'', pt:'' });
+    saveTimetable(t);
+    renderTimetable();
+    renderAdminTimetable();
+  });
+  $('btn-reset-timetable').addEventListener('click', ()=>{ if(confirm('Przywrócić domyślny plan lekcji?')){ saveTimetable(defaultTimetable); renderTimetable(); renderAdminTimetable(); } });
+
+  // ADMIN quick save / reset from admin tab
+  $('admin-save-timetable').addEventListener('click', ()=>{ saveAdminTimetableFromTable(); alert('Plan zapisany.'); });
+  $('admin-reset-timetable').addEventListener('click', ()=>{ if(confirm('Przywrócić domyślny plan lekcji?')){ saveTimetable(defaultTimetable); renderAdminTimetable(); renderTimetable(); alert('Przywrócono domyślny plan.'); } });
+
+  // STUDENTS table
+  function updateStudentsTable(filter=''){
+    const tbody = $('students-table').querySelector('tbody');
+    tbody.innerHTML = '';
+    const users = loadUsers().filter(u=>!u.isAdmin);
+    const filtered = users.filter(u=> (u.username + ' ' + (u.fullname||'')).toLowerCase().includes(filter.toLowerCase()));
+    filtered.forEach(u=>{
+      const tr = document.createElement('tr');
+      const tdAvatar = document.createElement('td');
+      const avat = document.createElement('div'); avat.className='avatar';
+      if(u.avatarData){ const img = document.createElement('img'); img.src = u.avatarData; avat.appendChild(img);} else { avat.textContent = (u.fullname || u.username).slice(0,2).toUpperCase(); }
+      tdAvatar.appendChild(avat);
+      tr.appendChild(tdAvatar);
+      tr.insertCell().textContent = u.username;
+      tr.insertCell().textContent = u.fullname || '-';
+      tr.insertCell().textContent = u.class || '-';
+      tr.insertCell().textContent = u.isAdmin ? 'Admin' : 'Uczeń';
+      const actions = tr.insertCell();
+      const btnView = document.createElement('button'); btnView.className='btn ghost'; btnView.textContent='Szczegóły';
+      btnView.onclick = ()=> { alert(`Login: ${u.username}\nImię: ${u.fullname}\nKlasa: ${u.class}\nUtworzono: ${u.createdAt}`); };
+      actions.appendChild(btnView);
+      // admin actions
+      if(currentUser && currentUser.isAdmin){
+        if(u.username !== 'admin'){
+          const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='Resetuj hasło';
+          btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6 zn.):'); if(!np) return; if(np.length<6){ alert('Za krótkie.'); return;} const us = loadUsers(); const ix = us.findIndex(x=>x.username===u.username); if(ix!==-1){ us[ix].passwordHash = await hashPassword(np); saveUsers(us); alert('Hasło zresetowane.'); } };
+          const btnDelete = document.createElement('button'); btnDelete.className='btn'; btnDelete.style.background='linear-gradient(90deg,#ef4444,#f97316)'; btnDelete.textContent='Usuń';
+          btnDelete.onclick = ()=>{ if(confirm(`Usunąć konto ${u.username}?`)){ const us = loadUsers().filter(x=>x.username!==u.username); saveUsers(us); updateStudentsTable(); updateAdminUsersTable(); alert('Usunięto'); } };
+          actions.appendChild(btnReset); actions.appendChild(btnDelete);
+        }
+      }
+      tbody.appendChild(tr);
+    });
+    $('students-count').textContent = loadUsers().filter(u=>!u.isAdmin).length;
+  }
+  $('search-students').addEventListener('input',(e)=> updateStudentsTable(e.target.value));
+
+  // SETTINGS: avatar upload / name / password / theme
+  $('avatar-file').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 2 * 1024 * 1024){ alert('Plik za duży (max 2MB)'); return; }
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      const data = ev.target.result;
+      const users = loadUsers();
+      const idx = users.findIndex(u=>u.username === currentUser.username);
+      if(idx !== -1){
+        users[idx].avatarData = data;
+        currentUser.avatarData = data;
+        saveUsers(users);
+        updateStatusCard();
+        populateSettings();
+        updateStudentsTable();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $('btn-reset-avatar').addEventListener('click', ()=>{
+    if(!confirm('Resetować awatar?')) return;
+    const users = loadUsers();
+    const idx = users.findIndex(u=>u.username === currentUser.username);
+    if(idx !== -1){ users[idx].avatarData = null; currentUser.avatarData = null; saveUsers(users); updateStatusCard(); populateSettings(); updateStudentsTable(); }
+  });
+
+  $('btn-change-pass').addEventListener('click', async ()=>{
+    const cur = $('settings-current-pass').value;
+    const nw = $('settings-new-pass').value;
+    if(!cur || !nw){ $('settings-msg').textContent = 'Wypełnij pola.'; return; }
+    if(nw.length < 6){ $('settings-msg').textContent = 'Hasło min 6 znaków.'; return; }
+    const ph = await hashPassword(cur);
+    if(ph !== currentUser.passwordHash){ $('settings-msg').textContent = 'Błędne aktualne hasło.'; return; }
+    const newHash = await hashPassword(nw);
+    const users = loadUsers();
+    const idx = users.findIndex(u=>u.username === currentUser.username);
+    if(idx !== -1){ users[idx].passwordHash = newHash; saveUsers(users); currentUser.passwordHash = newHash; $('settings-current-pass').value=''; $('settings-new-pass').value=''; $('settings-msg').textContent='Hasło zmienione.'; alert('Hasło zmienione.'); }
+  });
+
+  $('btn-save-theme').addEventListener('click', ()=>{
+    const sel = $('settings-theme').value;
+    const users = loadUsers();
+    const idx = users.findIndex(u=>u.username === currentUser.username);
+    if(idx !== -1){ users[idx].theme = sel; currentUser.theme = sel; saveUsers(users); if(sel==='light') document.body.classList.add('theme-light'); else document.body.classList.remove('theme-light'); alert('Motyw zapisany.'); }
+  });
+  $('btn-reset-theme').addEventListener('click', ()=>{
+    const users = loadUsers(); const idx = users.findIndex(u=>u.username===currentUser.username);
+    if(idx !== -1){ users[idx].theme = 'default'; currentUser.theme = 'default'; saveUsers(users); document.body.classList.remove('theme-light'); $('settings-theme').value='default'; alert('Przywrócono motyw.'); }
+  });
+
+  function populateSettings(){
+    if(!currentUser) return;
+    $('settings-fullname').value = currentUser.fullname || '';
+    const prev = $('settings-avatar-preview'); prev.innerHTML = '';
+    if(currentUser.avatarData){ const img = document.createElement('img'); img.src = currentUser.avatarData; prev.appendChild(img); } else { prev.textContent = (currentUser.fullname||currentUser.username||'U').slice(0,2).toUpperCase(); }
+    $('settings-theme').value = currentUser.theme || 'default';
+    $('settings-msg').textContent = '';
+  }
+
+  // ADMIN: update UI (users count, pending)
+  function updateAdminUI(){
+    updateAdminUsersTable();
+    renderAdminTimetable();
+    renderAdminPending();
+    updatePendingBadge();
+  }
+
+  function updatePendingBadge(){
+    const pending = loadPending();
+    const btn = document.querySelector('#nav-students .badge-count');
+    // we don't have separate badge element here, but update admin pending empty text
+    const dash = $('admin-pending-empty');
+    if(dash) dash.style.display = pending.length ? 'none' : 'block';
+    // small visible count near nav-students? skip for simplicity (we updated admin list)
+  }
+
+  // ADMIN: users table in admin panel
+  function updateAdminUsersTable(){
+    const tbody = $('admin-users-table').querySelector('tbody');
+    tbody.innerHTML = '';
+    const users = loadUsers();
+    users.forEach(u=>{
+      const tr = document.createElement('tr');
+      tr.insertCell().textContent = u.username;
+      tr.insertCell().textContent = u.fullname || '-';
+      tr.insertCell().textContent = u.class || '-';
+      const actions = tr.insertCell();
+      const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='Reset hasła';
+      btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6):'); if(!np) return; if(np.length<6){ alert('Za krótkie'); return; } const us = loadUsers(); const ix = us.findIndex(x=>x.username===u.username); us[ix].passwordHash = await hashPassword(np); saveUsers(us); alert('Hasło zresetowane.'); updateAdminUsersTable(); };
+      actions.appendChild(btnReset);
+      if(u.username !== 'admin'){
+        const btnDel = document.createElement('button'); btnDel.className='btn'; btnDel.style.background='linear-gradient(90deg,#ef4444,#f97316)'; btnDel.textContent='Usuń';
+        btnDel.onclick = ()=>{ if(confirm(`Usunąć konto ${u.username}?`)){ const us = loadUsers().filter(x=>x.username!==u.username); saveUsers(us); updateAdminUsersTable(); updateStudentsTable(); alert('Usunięto'); } };
+        actions.appendChild(btnDel);
+      }
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ADMIN: pending rendering (cards)
+  function renderAdminPending(){
+    const list = $('admin-pending-list');
+    list.innerHTML = '';
+    const pending = loadPending();
+    if(pending.length === 0){ $('admin-pending-empty').style.display = 'block'; return; } else { $('admin-pending-empty').style.display = 'none'; }
+    pending.forEach(p=>{
+      const row = document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.padding='10px'; row.style.borderRadius='8px'; row.style.marginBottom='8px'; row.style.background='rgba(255,255,255,0.01)';
+      const left = document.createElement('div'); left.innerHTML = `<div style="font-weight:700">${p.fullname} <span class="small muted">(${p.username})</span></div><div class="small muted">Klasa: ${p.class} · ${new Date(p.createdAt).toLocaleString()}</div>`;
+      const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px';
+      const btnA = document.createElement('button'); btnA.className='btn'; btnA.textContent='Zatwierdź';
+      btnA.onclick = ()=>{ approvePending(p.id); };
+      const btnR = document.createElement('button'); btnR.className='btn ghost'; btnR.textContent='Odrzuć';
+      btnR.onclick = ()=>{ rejectPending(p.id); };
+      right.appendChild(btnA); right.appendChild(btnR);
+      row.appendChild(left); row.appendChild(right);
+      list.appendChild(row);
+    });
+  }
+
+  function approvePending(id){
+    const pending = loadPending();
+    const idx = pending.findIndex(p=>p.id===id);
+    if(idx === -1) return alert('Nie znaleziono.');
+    const p = pending[idx];
+    const users = loadUsers();
+    users.push({ id:'u-'+Date.now(), username:p.username, fullname:p.fullname, class:p.class || '2TIP', isAdmin:false, passwordHash:p.passwordHash, avatarData:null, theme:'default', createdAt: nowISO() });
+    saveUsers(users);
+    pending.splice(idx,1);
+    savePending(pending);
+    renderAdminPending(); updateAdminUsersTable(); updateStudentsTable(); alert('Zatwierdzono konto.');
+  }
+  function rejectPending(id){
+    if(!confirm('Odrzucić zgłoszenie?')) return;
+    let pending = loadPending();
+    pending = pending.filter(p=>p.id !== id);
+    savePending(pending);
+    renderAdminPending(); updatePendingBadge(); alert('Odrzucono zgłoszenie.');
+  }
+
+  // admin add sample
+  $('admin-add-sample').addEventListener('click', async ()=>{
+    const users = loadUsers();
+    const username = 'uczen' + (Math.floor(Math.random()*900)+100);
+    const ph = await hashPassword('haslo123');
+    users.push({ id:'u-'+Date.now(), username, fullname:'Jan Sample', class:'2TIP', isAdmin:false, passwordHash:ph, avatarData:null, theme:'default', createdAt: nowISO() });
+    saveUsers(users);
+    updateAdminUsersTable(); updateStudentsTable(); alert('Dodano próbne konto: ' + username + ' / haslo: haslo123');
+  });
+
+  // Admin tab switching
+  document.querySelectorAll('.admin-tabs .tab').forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      document.querySelectorAll('.admin-tabs .tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      const key = tab.dataset.tab;
+      openAdminTab(key);
+    });
+  });
+  function openAdminTab(key){
+    document.querySelectorAll('.admin-tab-content').forEach(c=>c.style.display='none');
+    const el = $(key);
+    if(el) el.style.display = 'block';
+    // refresh content per tab
+    if(key === 'admin-students-tab'){ updateAdminUsersTable(); }
+    if(key === 'admin-timetable-tab'){ renderAdminTimetable(); }
+    if(key === 'admin-pending-tab'){ renderAdminPending(); }
+  }
+
+  // utility functions for admin save timetable from admin table on blur
+  // attach blur handler after rendering
+  function attachAdminTableBlur(){
+    const table = $('admin-timetable-table');
+    if(!table) return;
+    for(let r=0;r<table.tBodies[0].rows.length;r++){
+      const row = table.tBodies[0].rows[r];
+      for(let c=0;c<row.cells.length;c++){
+        const cell = row.cells[c];
+        cell.addEventListener('blur', ()=> saveAdminTimetableFromTable() );
+      }
+    }
+  }
+
+  // make sure to re-attach after render
+  const origRenderAdminTimetable = renderAdminTimetable;
+  renderAdminTimetable = function(){ origRenderAdminTimetable(); attachAdminTableBlur(); };
+
+  // initial UI update functions used earlier
+  function updateAdminUsersTable(){ /* implemented above */ return updateAdminUsersTableInner(); }
+  // avoid function hoisting confusion: implement inner used earlier
+  function updateAdminUsersTableInner(){
+    const tbody = $('admin-users-table').querySelector('tbody');
+    tbody.innerHTML = '';
+    const users = loadUsers();
+    users.forEach(u=>{
+      const tr = document.createElement('tr');
+      tr.insertCell().textContent = u.username;
+      tr.insertCell().textContent = u.fullname || '-';
+      tr.insertCell().textContent = u.class || '-';
+      const actions = tr.insertCell();
+      const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='Reset hasła';
+      btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6):'); if(!np) return; if(np.length<6){ alert('Za krótkie'); return;} const us = loadUsers(); const ix = us.findIndex(x=>x.username===u.username); if(ix!==-1){ us[ix].passwordHash = await hashPassword(np); saveUsers(us); alert('Hasło zresetowane.'); updateAdminUsersTableInner(); } };
+      actions.appendChild(btnReset);
+      if(u.username !== 'admin'){
+        const btnDel = document.createElement('button'); btnDel.className='btn'; btnDel.style.background='linear-gradient(90deg,#ef4444,#f97316)'; btnDel.textContent='Usuń';
+        btnDel.onclick = ()=>{ if(confirm(`Usunąć konto ${u.username}?`)){ const us = loadUsers().filter(x=>x.username!==u.username); saveUsers(us); updateAdminUsersTableInner(); updateStudentsTable(); alert('Usunięto'); } };
+        actions.appendChild(btnDel);
+      }
+      tbody.appendChild(tr);
+    });
+  }
+
+  // wire admin timetable save buttons (already bound earlier via ids)
+  // but ensure elements exist
+  try{ if($('admin-save-timetable')) $('admin-save-timetable').addEventListener('click', ()=>{ saveAdminTimetableFromTable(); alert('Plan zapisany.'); }); }catch(e){}
+  try{ if($('admin-reset-timetable')) $('admin-reset-timetable').addEventListener('click', ()=>{ if(confirm('Przywrócić domyślny plan?')){ saveTimetable(defaultTimetable); renderAdminTimetable(); renderTimetable(); alert('Przywrócono.'); } }); }catch(e){}
+
+  // initial rendering helpers
+  function initTimetableStorage(){ if(!loadTimetable()){ saveTimetable(defaultTimetable); } }
+  initTimetableStorage();
+
+  // update admin pending badge and lists
+  function updatePendingBadgeAndUI(){
+    updatePendingBadge();
+    renderAdminPending();
+  }
+
+  // approve/reject functions already implemented above
+
+  // update students/ admin lists
+  function initUI(){
+    updateNavVisibility();
+    updateAdminUI();
+    renderTimetable();
+    updateStudentsTable();
+    updateStatusCard();
+    // choose initial view
+    if(currentUser){
+      showPanel(panelTimetable);
+      setActiveNav(navTimetable);
+    } else {
+      showPanel(panelLogin);
+      setActiveNav(navLogin);
+    }
+  }
+
+  // keep in sync across tabs
+  window.addEventListener('storage', (e)=>{
+    if([USERS_KEY,PENDING_KEY,TIMETABLE_KEY].includes(e.key)){
+      updateAdminUI(); renderTimetable(); updateStudentsTable(); updateStatusCard();
+    }
+  });
+
+  // run initialization
+  initUI();
+
+  // export some functions to console for debugging (optional)
+  window._2TIP = { loadUsers, loadPending, loadTimetable, saveTimetable, ensureAdmin };
+
+})(); // end IIFE
+</script>
+</body>
+</html>
