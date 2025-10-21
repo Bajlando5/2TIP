@@ -937,6 +937,19 @@
   window._2TIP = { loadUsers, loadPending, loadTimetable, saveTimetable, ensureAdmin };
 
 })(); // end IIFE
+
+    // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
   
   <script type="module">
   // Import the functions you need from the SDKs you need
@@ -955,24 +968,11 @@
     messagingSenderId: "710333813655",
     appId: "1:710333813655:web:14841ce6b7710755302ad2",
     measurementId: "G-4MP2V2JTBH"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
-    }
-  }
-}
-      
+  };  
 </script>
 </body>
 </html>
+
 
 
 
