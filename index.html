@@ -3,138 +3,51 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>2TIP — Strona klasowa (panel)</title>
+<title>2TIP — Strona klasowa (Firestore)</title>
 <link rel="icon" href="data:," />
 <style>
-  /* -------- Vars & base -------- */
+  /* (CSS jak wcześniej - ciemny, fioletowo-niebieski motyw) */
   :root{
-    --bg-0:#060714;
-    --bg-1:#0f1724;
-    --card: rgba(255,255,255,0.03);
-    --glass: rgba(255,255,255,0.02);
-    --accent1:#7c3aed; /* fiolet */
-    --accent2:#06b6d4; /* niebieski */
-    --text:#e6eef8;
-    --muted:#98a0b3;
-    --success:#10b981;
-    --danger:#ef4444;
-    --radius:12px;
-    --shadow: 0 10px 30px rgba(2,6,23,0.6);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    --bg-0:#060714; --bg-1:#0f1724; --card: rgba(255,255,255,0.03);
+    --glass: rgba(255,255,255,0.02); --accent1:#7c3aed; --accent2:#06b6d4;
+    --text:#e6eef8; --muted:#98a0b3; --radius:12px; --shadow: 0 10px 30px rgba(2,6,23,0.6);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;
-    background:
+    margin:0;background:
       radial-gradient(700px 500px at 10% 10%, rgba(124,58,237,0.09), transparent),
       radial-gradient(700px 500px at 90% 90%, rgba(6,182,212,0.06), transparent),
       linear-gradient(180deg,var(--bg-0),var(--bg-1));
-    color:var(--text);
-    -webkit-font-smoothing:antialiased;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:28px;
-    gap:20px;
+    color:var(--text); display:flex;align-items:flex-start;justify-content:center;padding:28px;gap:20px;
   }
-
-  /* -------- App layout -------- */
-  .app {
-    width:100%;
-    max-width:1200px;
-    display:grid;
-    grid-template-columns: 260px 1fr;
-    gap:20px;
+  .app { width:100%; max-width:1200px; display:grid; grid-template-columns:260px 1fr; gap:20px;
     background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
-    border-radius:18px;
-    box-shadow:var(--shadow);
-    overflow:hidden;
-  }
-
-  aside {
-    padding:20px;
-    border-right:1px solid rgba(255,255,255,0.03);
-    background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
-  }
+    border-radius:18px; box-shadow:var(--shadow); overflow:hidden; }
+  aside{padding:20px;border-right:1px solid rgba(255,255,255,0.03)}
   .brand{display:flex;gap:12px;align-items:center;margin-bottom:14px}
-  .logo {
-    width:56px;height:56px;border-radius:12px;
-    background:linear-gradient(135deg,var(--accent1),var(--accent2));
-    display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:18px;
-    box-shadow:0 8px 30px rgba(124,58,237,0.14);
-  }
-  .brand h1{margin:0;font-size:16px}
-  .brand p{margin:0;font-size:13px;color:var(--muted)}
-
+  .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:white;font-size:18px;box-shadow:0 8px 30px rgba(124,58,237,0.14);}
   nav ul{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-direction:column;gap:10px}
-  nav button{
-    display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:0;background:transparent;color:var(--text);
-    cursor:pointer;font-weight:700;text-align:left;font-size:14px;
-  }
-  nav button:hover{background:rgba(255,255,255,0.02)}
-  nav button.active{background:linear-gradient(90deg, rgba(124,58,237,0.18), rgba(6,182,212,0.08));box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
-
+  nav button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:0;background:transparent;color:var(--text);cursor:pointer;font-weight:700;text-align:left;font-size:14px;}
+  nav button:hover{background:rgba(255,255,255,0.02)} nav button.active{background:linear-gradient(90deg, rgba(124,58,237,0.18), rgba(6,182,212,0.08));box-shadow:inset 0 1px 0 rgba(255,255,255,0.02)}
   .status-card{margin-top:18px;padding:12px;border-radius:12px;background:var(--glass);border:1px solid rgba(255,255,255,0.02)}
   .small{font-size:13px;color:var(--muted)}
-
-  /* main */
   main{padding:22px;overflow:auto}
   header.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-  header .title{font-size:18px;margin:0}
-  header .subtitle{margin:2px 0 0;color:var(--muted);font-size:13px}
-
-  .card{
-    background:var(--card);
-    padding:16px;border-radius:var(--radius);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.01);
-    margin-bottom:18px;
-  }
-
-  /* forms */
-  form{display:grid;gap:10px}
-  input,select,textarea{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;color:var(--text);outline:none}
+  .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow: inset 0 1px 0 rgba(255,255,255,0.01);margin-bottom:18px;}
+  form{display:grid;gap:10px} input,select,textarea{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px;border-radius:10px;color:var(--text);outline:none}
   input:focus,textarea:focus,select:focus{border-color:rgba(124,58,237,0.6);box-shadow:0 8px 30px rgba(124,58,237,0.05)}
-  .btn{
-    display:inline-block;padding:10px 14px;border-radius:10px;border:0;font-weight:800;color:white;background:linear-gradient(90deg,var(--accent1),var(--accent2));cursor:pointer;
-    transition:transform .12s ease,opacity .12s;
-  }
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
-  .btn:hover{transform:translateY(-2px)}
-  .muted{color:var(--muted)}
-
-  table{width:100%;border-collapse:collapse;margin-top:10px}
-  th,td{padding:8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px}
-  th{color:var(--muted);font-weight:700;font-size:13px}
-
-  /* timetable editable */
-  .timetable{width:100%;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
-  .timetable td[contenteditable]{cursor:text;background:rgba(255,255,255,0.01)}
-  .timetable td:hover{background:rgba(255,255,255,0.01)}
-
-  /* admin tabs */
-  .admin-tabs{display:flex;gap:8px;margin-bottom:12px}
-  .tab{padding:10px 12px;border-radius:10px;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.02);font-weight:700}
-  .tab.active{background:linear-gradient(90deg, rgba(124,58,237,0.18), rgba(6,182,212,0.06))}
-
-  /* avatar */
+  .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:0;font-weight:800;color:white;background:linear-gradient(90deg,var(--accent1),var(--accent2));cursor:pointer;transition:transform .12s ease,opacity .12s;}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)} .btn:hover{transform:translateY(-2px)}
+  table{width:100%;border-collapse:collapse;margin-top:10px} th,td{padding:8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:14px} th{color:var(--muted);font-weight:700;font-size:13px}
+  .timetable{width:100%;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)} .timetable td[contenteditable]{cursor:text;background:rgba(255,255,255,0.01)} .timetable td:hover{background:rgba(255,255,255,0.01)}
+  .admin-tabs{display:flex;gap:8px;margin-bottom:12px} .tab{padding:10px 12px;border-radius:10px;cursor:pointer;background:transparent;border:1px solid rgba(255,255,255,0.02);font-weight:700} .tab.active{background:linear-gradient(90deg, rgba(124,58,237,0.18), rgba(6,182,212,0.06))}
   .avatar{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;color:white;font-weight:800;overflow:hidden}
   .avatar img{width:100%;height:100%;object-fit:cover}
-
-  /* responsive */
-  @media (max-width:980px){
-    .app{grid-template-columns:1fr; padding:14px;}
-    aside{order:2;border-right:0;border-top:1px solid rgba(255,255,255,0.03)}
-  }
-
-  /* theme variants (simple) */
-  body.theme-light{
-    --bg-0:#f6f7fb; --bg-1:#eef2fb; --card:rgba(2,6,23,0.03); --text:#0b1220; --muted:#4b5563;
-  }
-
-  /* small helpers */
-  .flex{display:flex;gap:10px;align-items:center}
-  .center{display:flex;align-items:center;justify-content:center}
+  @media (max-width:980px){ .app{grid-template-columns:1fr; padding:14px;} aside{order:2;border-right:0;border-top:1px solid rgba(255,255,255,0.03)}}
+  body.theme-light{--bg-0:#f6f7fb; --bg-1:#eef2fb; --card:rgba(2,6,23,0.03); --text:#0b1220; --muted:#4b5563;}
 </style>
 </head>
 <body>
@@ -163,7 +76,6 @@
     <div class="status-card card" id="status-box">
       <div class="small">Nie jesteś zalogowany</div>
     </div>
-
   </aside>
 
   <main>
@@ -172,7 +84,7 @@
         <h2 class="title" id="page-title">Logowanie / Rejestracja</h2>
         <div class="subtitle" id="page-sub">Zaloguj się lub zarejestruj — admin zatwierdza nowe konta.</div>
       </div>
-      <div class="flex">
+      <div style="display:flex;gap:10px;align-items:center">
         <div id="welcome-text" class="small muted">Nie zalogowano</div>
         <div id="user-controls"></div>
       </div>
@@ -259,7 +171,7 @@
         <div>
           <label class="small muted">Zmień awatar</label><br>
           <input id="avatar-file" type="file" accept="image/*">
-          <div class="small muted">Plik max 2MB — zapis lokalny.</div>
+          <div class="small muted">Plik max 2MB — zapis w Firestore Storage (opcjonalnie) lub jako base64 w dokumencie.</div>
         </div>
       </div>
 
@@ -353,601 +265,12 @@
   </main>
 </div>
 
-<script>
-/* -------------------- LOGIKA APLIKACJI -------------------- */
-(async function(){
-  // keys
-  const USERS_KEY = '2tip_users_v2';
-  const PENDING_KEY = '2tip_pending_v2';
-  const TIMETABLE_KEY = '2tip_timetable_v2';
-  const SESSION_KEY = '2tip_session_v2';
+<!-- Firebase + App logic -->
+<script type="module">
+/* ========== Firebase initialization (modular SDK) ========== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
-  // helpers
-  const $ = id => document.getElementById(id);
-  const nowISO = ()=> new Date().toISOString();
-
-  async function hashPassword(password){
-    const enc = new TextEncoder();
-    const data = enc.encode(password);
-    const buf = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-  }
-
-  function loadUsers(){ try{ return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }catch(e){return []} }
-  function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
-  function loadPending(){ try{ return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); }catch(e){return []} }
-  function savePending(p){ localStorage.setItem(PENDING_KEY, JSON.stringify(p)); }
-  function loadTimetable(){ try{ return JSON.parse(localStorage.getItem(TIMETABLE_KEY)); }catch(e){return null} }
-  function saveTimetable(t){ localStorage.setItem(TIMETABLE_KEY, JSON.stringify(t)); }
-
-  // default timetable (grid with hours)
-  const defaultTimetable = {
-    slots: [
-      {time:'8:00-8:45', pon:'J. polski', wt:'Matematyka', sr:'Fizyka', czw:'WF', pt:'Informatyka'},
-      {time:'8:55-9:40', pon:'Matematyka', wt:'J. angielski', sr:'Chemia', czw:'BHP', pt:'Historia'},
-      {time:'9:50-10:35', pon:'Informatyka', wt:'Fizyka', sr:'J. polski', czw:'Matematyka', pt:'Technologia'},
-      {time:'10:55-11:40', pon:'WF', wt:'Historia', sr:'J. angielski', czw:'Geografia', pt:'Biologia'}
-    ]
-  };
-
-  // ensure admin account exists
-  async function ensureAdmin(){
-    let users = loadUsers();
-    if(!users.some(u=>u.username === 'admin')){
-      const ph = await hashPassword('Admin!234');
-      users.push({
-        id:'u-admin',
-        username:'admin',
-        fullname:'Administrator',
-        class:'admin',
-        isAdmin:true,
-        passwordHash:ph,
-        avatarData:null,
-        theme:'default',
-        createdAt: nowISO()
-      });
-      saveUsers(users);
-    }
-  }
-  await ensureAdmin();
-
-  // session
-  let currentUser = null;
-  function loadSession(){
-    try{
-      const s = sessionStorage.getItem(SESSION_KEY);
-      if(!s) return;
-      const obj = JSON.parse(s);
-      if(!obj || !obj.username) return;
-      const users = loadUsers();
-      const found = users.find(u=>u.username === obj.username);
-      if(found) currentUser = found;
-    }catch(e){}
-  }
-  loadSession();
-
-  // UI elements
-  const navLogin = $('nav-login'), navTimetable = $('nav-timetable'), navStudents = $('nav-students'), navSettings = $('nav-settings'), navAdmin = $('nav-admin'), navAbout = $('nav-about'), navLogout = $('nav-logout');
-  const panelLogin = $('panel-login'), panelTimetable = $('panel-timetable'), panelStudents = $('panel-students'), panelSettings = $('panel-settings'), panelAdmin = $('panel-admin'), panelAbout = $('panel-about');
-  const pageTitle = $('page-title'), pageSub = $('page-sub');
-  const statusBox = $('status-box'), welcomeText = $('welcome-text'), userControls = $('user-controls');
-
-  // basic nav show/hide
-  function setActiveNav(btn){
-    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-    if(btn) btn.classList.add('active');
-  }
-  function hideAllPanels(){
-    [panelLogin, panelTimetable, panelStudents, panelSettings, panelAdmin, panelAbout].forEach(p => { if(p) p.style.display='none'; });
-  }
-  function showPanel(panel){
-    hideAllPanels();
-    panel.style.display = 'block';
-  }
-
-  function updateNavVisibility(){
-    const logged = !!currentUser;
-    navLogin.style.display = logged ? 'none' : 'block';
-    navTimetable.style.display = logged ? 'block' : 'none';
-    navStudents.style.display = logged ? 'block' : 'none';
-    navSettings.style.display = logged ? 'block' : 'none';
-    navAbout.style.display = logged ? 'block' : 'none';
-    navLogout.style.display = logged ? 'block' : 'none';
-    navAdmin.style.display = (logged && currentUser && currentUser.isAdmin) ? 'block' : 'none';
-    updateStatusCard();
-    updateStudentsTable();
-    updatePendingBadge();
-  }
-
-  function updateStatusCard(){
-    statusBox.innerHTML = '';
-    if(currentUser){
-      const wrapper = document.createElement('div'); wrapper.style.display='flex';wrapper.style.gap='10px';wrapper.style.alignItems='center';
-      const avat = document.createElement('div'); avat.className='avatar';
-      if(currentUser.avatarData){ const img = document.createElement('img'); img.src = currentUser.avatarData; avat.appendChild(img); } else { avat.textContent = (currentUser.fullname||currentUser.username||'U').slice(0,2).toUpperCase(); }
-      wrapper.appendChild(avat);
-      const txt = document.createElement('div'); txt.innerHTML = `<div style="font-weight:700">${currentUser.fullname || currentUser.username}</div><div class="small muted">${currentUser.username} · ${currentUser.class}</div>`;
-      wrapper.appendChild(txt);
-      statusBox.appendChild(wrapper);
-
-      welcomeText.textContent = `Witaj, ${currentUser.fullname || currentUser.username}`;
-      userControls.innerHTML = '';
-      const logoutBtn = document.createElement('button'); logoutBtn.className='btn ghost'; logoutBtn.textContent='Wyloguj';
-      logoutBtn.onclick = ()=> { currentUser = null; sessionStorage.removeItem(SESSION_KEY); updateNavVisibility(); showPanel(panelLogin); setActiveNav(navLogin); };
-      userControls.appendChild(logoutBtn);
-      if(currentUser.isAdmin){
-        const adminBtn = document.createElement('button'); adminBtn.className='btn'; adminBtn.textContent='Panel admina';
-        adminBtn.onclick = ()=>{ setActiveNav(navAdmin); showPanel(panelAdmin); openAdminTab('admin-students-tab'); };
-        userControls.appendChild(adminBtn);
-      }
-      // apply theme
-      if(currentUser.theme && currentUser.theme === 'light'){ document.body.classList.add('theme-light'); } else { document.body.classList.remove('theme-light'); }
-    } else {
-      statusBox.innerHTML = '<div class="small">Nie jesteś zalogowany</div>';
-      welcomeText.textContent = 'Nie zalogowano';
-      userControls.innerHTML = '';
-      document.body.classList.remove('theme-light');
-    }
-  }
-
-  // NAV handlers
-  navLogin.addEventListener('click', ()=>{ setActiveNav(navLogin); showPanel(panelLogin); pageTitle.textContent='Logowanie / Rejestracja'; pageSub.textContent='Zaloguj się lub zarejestruj.'; });
-  navTimetable.addEventListener('click', ()=>{ setActiveNav(navTimetable); showPanel(panelTimetable); pageTitle.textContent='Plan lekcji'; pageSub.textContent='Plan klasy 2TIP'; renderTimetable(); });
-  navStudents.addEventListener('click', ()=>{ setActiveNav(navStudents); showPanel(panelStudents); pageTitle.textContent='Uczniowie'; pageSub.textContent='Lista uczniów'; updateStudentsTable(); });
-  navSettings.addEventListener('click', ()=>{ setActiveNav(navSettings); showPanel(panelSettings); pageTitle.textContent='Ustawienia'; pageSub.textContent='Twoje ustawienia'; populateSettings(); });
-  navAdmin.addEventListener('click', ()=>{ setActiveNav(navAdmin); showPanel(panelAdmin); pageTitle.textContent='Panel administratora'; pageSub.textContent='Szybkie zarządzanie'; updateAdminUI(); openAdminTab('admin-students-tab'); });
-  navAbout.addEventListener('click', ()=>{ setActiveNav(navAbout); showPanel(panelAbout); pageTitle.textContent='O klasie'; pageSub.textContent='Informacje'; });
-  navLogout.addEventListener('click', ()=>{ currentUser = null; sessionStorage.removeItem(SESSION_KEY); updateNavVisibility(); showPanel(panelLogin); setActiveNav(navLogin); });
-
-  // LOGIN
-  $('form-login').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const user = $('login-username').value.trim();
-    const pass = $('login-password').value;
-    if(!user || !pass){ $('login-msg').textContent = 'Wypełnij pola.'; return; }
-    const users = loadUsers();
-    const found = users.find(u=>u.username.toLowerCase() === user.toLowerCase());
-    if(!found){ $('login-msg').textContent = 'Nie znaleziono użytkownika (może oczekuje na zatwierdzenie).'; return; }
-    const ph = await hashPassword(pass);
-    if(ph !== found.passwordHash){ $('login-msg').textContent = 'Błędne hasło.'; return; }
-    currentUser = found;
-    sessionStorage.setItem(SESSION_KEY, JSON.stringify({username: currentUser.username}));
-    $('login-password').value = '';
-    $('login-msg').textContent = '';
-    updateNavVisibility();
-    updateStatusCard();
-    setActiveNav(navTimetable);
-    showPanel(panelTimetable);
-    renderTimetable();
-  });
-
-  // REGISTER -> add to pending
-  $('form-register').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const username = $('reg-username').value.trim();
-    const fullname = $('reg-fullname').value.trim();
-    const klass = $('reg-class').value;
-    const pass = $('reg-password').value;
-    if(!username || !fullname || !pass){ $('reg-msg').textContent = 'Uzupełnij wszystkie pola.'; return; }
-    if(pass.length < 6){ $('reg-msg').textContent = 'Hasło musi mieć min 6 znaków.'; return; }
-    const users = loadUsers();
-    const pending = loadPending();
-    if(users.some(u=>u.username.toLowerCase()===username.toLowerCase()) || pending.some(p=>p.username.toLowerCase()===username.toLowerCase())){
-      $('reg-msg').textContent = 'Nazwa użytkownika zajęta lub oczekuje na zatwierdzenie.'; return;
-    }
-    const ph = await hashPassword(pass);
-    pending.push({ id:'p-'+Date.now(), username, fullname, class:klass, passwordHash:ph, createdAt:nowISO() });
-    savePending(pending);
-    $('reg-msg').textContent = 'Zarejestrowano — konto oczekuje na zatwierdzenie.';
-    $('form-register').reset();
-    updatePendingBadge();
-  });
-
-  $('btn-clear-register').addEventListener('click', ()=>{ $('reg-username').value=''; $('reg-fullname').value=''; $('reg-password').value=''; $('reg-msg').textContent=''; });
-
-  // TIMETABLE rendering (user view)
-  function renderTimetable(){
-    const tb = $('timetable-table');
-    if(!tb) return;
-    const body = tb.querySelector('tbody');
-    body.innerHTML = '';
-    const t = loadTimetable() || defaultTimetable;
-    t.slots.forEach(slot=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${slot.time}</td><td>${slot.pon}</td><td>${slot.wt}</td><td>${slot.sr}</td><td>${slot.czw}</td><td>${slot.pt}</td>`;
-      body.appendChild(tr);
-    });
-    // admin edit visibility
-    const controls = $('timetable-controls');
-    if(currentUser && currentUser.isAdmin){ controls.style.display = 'block'; } else { controls.style.display = 'none'; }
-  }
-
-  // ADMIN: render editable timetable (same structure but editable)
-  function renderAdminTimetable(editable=true){
-    const table = $('admin-timetable-table');
-    const body = table.querySelector('tbody');
-    body.innerHTML = '';
-    const t = loadTimetable() || defaultTimetable;
-    t.slots.forEach((slot, rowIdx)=>{
-      const tr = document.createElement('tr');
-      const tdTime = document.createElement('td'); tdTime.textContent = slot.time; tr.appendChild(tdTime);
-
-      ['pon','wt','sr','czw','pt'].forEach(dayKey=>{
-        const td = document.createElement('td');
-        td.textContent = slot[dayKey] || '';
-        if(editable){
-          td.setAttribute('contenteditable','true');
-          td.addEventListener('keydown', (ev)=>{
-            if(ev.key === 'Enter'){ ev.preventDefault(); ev.target.blur(); }
-          });
-          td.addEventListener('blur', ()=> saveAdminTimetableFromTable());
-        }
-        tr.appendChild(td);
-      });
-
-      body.appendChild(tr);
-    });
-  }
-
-  // save admin timetable by reading admin table DOM
-  function saveAdminTimetableFromTable(){
-    const table = $('admin-timetable-table');
-    const body = table.querySelector('tbody');
-    const newSlots = [];
-    for(let i=0;i<body.rows.length;i++){
-      const r = body.rows[i];
-      const cols = Array.from(r.cells).map(c=>c.textContent.trim());
-      newSlots.push({ time: cols[0] || '', pon:cols[1]||'', wt:cols[2]||'', sr:cols[3]||'', czw:cols[4]||'', pt:cols[5]||'' });
-    }
-    saveTimetable({ slots: newSlots });
-    renderTimetable(); // update user view
-  }
-  // wrapper used on blur to throttle saves
-  let saveTimeout = null;
-  function saveAdminTimetableFromTableDebounced(){
-    if(saveTimeout) clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(saveAdminTimetableFromTable, 350);
-  }
-  // replace the above usage: attach blur to call debounced
-  function saveAdminTimetableFromTable(){ // override: immediate
-    const table = $('admin-timetable-table');
-    if(!table) return;
-    const body = table.querySelector('tbody');
-    const newSlots = [];
-    for(let i=0;i<body.rows.length;i++){
-      const r = body.rows[i];
-      const cols = Array.from(r.cells).map(c=>c.textContent.trim());
-      newSlots.push({ time: cols[0] || '', pon:cols[1]||'', wt:cols[2]||'', sr:cols[3]||'', czw:cols[4]||'', pt:cols[5]||'' });
-    }
-    saveTimetable({ slots: newSlots });
-    renderTimetable(); // update user view
-  }
-
-  // Admin add row
-  $('btn-add-row').addEventListener('click', ()=>{
-    if(!currentUser || !currentUser.isAdmin){ alert('Tylko admin.'); return; }
-    const t = loadTimetable() || defaultTimetable;
-    t.slots.push({ time:'nowa', pon:'', wt:'', sr:'', czw:'', pt:'' });
-    saveTimetable(t);
-    renderTimetable();
-    renderAdminTimetable();
-  });
-  $('btn-reset-timetable').addEventListener('click', ()=>{ if(confirm('Przywrócić domyślny plan lekcji?')){ saveTimetable(defaultTimetable); renderTimetable(); renderAdminTimetable(); } });
-
-  // ADMIN quick save / reset from admin tab
-  $('admin-save-timetable').addEventListener('click', ()=>{ saveAdminTimetableFromTable(); alert('Plan zapisany.'); });
-  $('admin-reset-timetable').addEventListener('click', ()=>{ if(confirm('Przywrócić domyślny plan lekcji?')){ saveTimetable(defaultTimetable); renderAdminTimetable(); renderTimetable(); alert('Przywrócono domyślny plan.'); } });
-
-  // STUDENTS table
-  function updateStudentsTable(filter=''){
-    const tbody = $('students-table').querySelector('tbody');
-    tbody.innerHTML = '';
-    const users = loadUsers().filter(u=>!u.isAdmin);
-    const filtered = users.filter(u=> (u.username + ' ' + (u.fullname||'')).toLowerCase().includes(filter.toLowerCase()));
-    filtered.forEach(u=>{
-      const tr = document.createElement('tr');
-      const tdAvatar = document.createElement('td');
-      const avat = document.createElement('div'); avat.className='avatar';
-      if(u.avatarData){ const img = document.createElement('img'); img.src = u.avatarData; avat.appendChild(img);} else { avat.textContent = (u.fullname || u.username).slice(0,2).toUpperCase(); }
-      tdAvatar.appendChild(avat);
-      tr.appendChild(tdAvatar);
-      tr.insertCell().textContent = u.username;
-      tr.insertCell().textContent = u.fullname || '-';
-      tr.insertCell().textContent = u.class || '-';
-      tr.insertCell().textContent = u.isAdmin ? 'Admin' : 'Uczeń';
-      const actions = tr.insertCell();
-      const btnView = document.createElement('button'); btnView.className='btn ghost'; btnView.textContent='Szczegóły';
-      btnView.onclick = ()=> { alert(`Login: ${u.username}\nImię: ${u.fullname}\nKlasa: ${u.class}\nUtworzono: ${u.createdAt}`); };
-      actions.appendChild(btnView);
-      // admin actions
-      if(currentUser && currentUser.isAdmin){
-        if(u.username !== 'admin'){
-          const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='Resetuj hasło';
-          btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6 zn.):'); if(!np) return; if(np.length<6){ alert('Za krótkie.'); return;} const us = loadUsers(); const ix = us.findIndex(x=>x.username===u.username); if(ix!==-1){ us[ix].passwordHash = await hashPassword(np); saveUsers(us); alert('Hasło zresetowane.'); } };
-          const btnDelete = document.createElement('button'); btnDelete.className='btn'; btnDelete.style.background='linear-gradient(90deg,#ef4444,#f97316)'; btnDelete.textContent='Usuń';
-          btnDelete.onclick = ()=>{ if(confirm(`Usunąć konto ${u.username}?`)){ const us = loadUsers().filter(x=>x.username!==u.username); saveUsers(us); updateStudentsTable(); updateAdminUsersTable(); alert('Usunięto'); } };
-          actions.appendChild(btnReset); actions.appendChild(btnDelete);
-        }
-      }
-      tbody.appendChild(tr);
-    });
-    $('students-count').textContent = loadUsers().filter(u=>!u.isAdmin).length;
-  }
-  $('search-students').addEventListener('input',(e)=> updateStudentsTable(e.target.value));
-
-  // SETTINGS: avatar upload / name / password / theme
-  $('avatar-file').addEventListener('change', (e)=>{
-    const file = e.target.files[0];
-    if(!file) return;
-    if(file.size > 2 * 1024 * 1024){ alert('Plik za duży (max 2MB)'); return; }
-    const reader = new FileReader();
-    reader.onload = function(ev){
-      const data = ev.target.result;
-      const users = loadUsers();
-      const idx = users.findIndex(u=>u.username === currentUser.username);
-      if(idx !== -1){
-        users[idx].avatarData = data;
-        currentUser.avatarData = data;
-        saveUsers(users);
-        updateStatusCard();
-        populateSettings();
-        updateStudentsTable();
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-
-  $('btn-reset-avatar').addEventListener('click', ()=>{
-    if(!confirm('Resetować awatar?')) return;
-    const users = loadUsers();
-    const idx = users.findIndex(u=>u.username === currentUser.username);
-    if(idx !== -1){ users[idx].avatarData = null; currentUser.avatarData = null; saveUsers(users); updateStatusCard(); populateSettings(); updateStudentsTable(); }
-  });
-
-  $('btn-change-pass').addEventListener('click', async ()=>{
-    const cur = $('settings-current-pass').value;
-    const nw = $('settings-new-pass').value;
-    if(!cur || !nw){ $('settings-msg').textContent = 'Wypełnij pola.'; return; }
-    if(nw.length < 6){ $('settings-msg').textContent = 'Hasło min 6 znaków.'; return; }
-    const ph = await hashPassword(cur);
-    if(ph !== currentUser.passwordHash){ $('settings-msg').textContent = 'Błędne aktualne hasło.'; return; }
-    const newHash = await hashPassword(nw);
-    const users = loadUsers();
-    const idx = users.findIndex(u=>u.username === currentUser.username);
-    if(idx !== -1){ users[idx].passwordHash = newHash; saveUsers(users); currentUser.passwordHash = newHash; $('settings-current-pass').value=''; $('settings-new-pass').value=''; $('settings-msg').textContent='Hasło zmienione.'; alert('Hasło zmienione.'); }
-  });
-
-  $('btn-save-theme').addEventListener('click', ()=>{
-    const sel = $('settings-theme').value;
-    const users = loadUsers();
-    const idx = users.findIndex(u=>u.username === currentUser.username);
-    if(idx !== -1){ users[idx].theme = sel; currentUser.theme = sel; saveUsers(users); if(sel==='light') document.body.classList.add('theme-light'); else document.body.classList.remove('theme-light'); alert('Motyw zapisany.'); }
-  });
-  $('btn-reset-theme').addEventListener('click', ()=>{
-    const users = loadUsers(); const idx = users.findIndex(u=>u.username===currentUser.username);
-    if(idx !== -1){ users[idx].theme = 'default'; currentUser.theme = 'default'; saveUsers(users); document.body.classList.remove('theme-light'); $('settings-theme').value='default'; alert('Przywrócono motyw.'); }
-  });
-
-  function populateSettings(){
-    if(!currentUser) return;
-    $('settings-fullname').value = currentUser.fullname || '';
-    const prev = $('settings-avatar-preview'); prev.innerHTML = '';
-    if(currentUser.avatarData){ const img = document.createElement('img'); img.src = currentUser.avatarData; prev.appendChild(img); } else { prev.textContent = (currentUser.fullname||currentUser.username||'U').slice(0,2).toUpperCase(); }
-    $('settings-theme').value = currentUser.theme || 'default';
-    $('settings-msg').textContent = '';
-  }
-
-  // ADMIN: update UI (users count, pending)
-  function updateAdminUI(){
-    updateAdminUsersTable();
-    renderAdminTimetable();
-    renderAdminPending();
-    updatePendingBadge();
-  }
-
-  function updatePendingBadge(){
-    const pending = loadPending();
-    const btn = document.querySelector('#nav-students .badge-count');
-    // we don't have separate badge element here, but update admin pending empty text
-    const dash = $('admin-pending-empty');
-    if(dash) dash.style.display = pending.length ? 'none' : 'block';
-    // small visible count near nav-students? skip for simplicity (we updated admin list)
-  }
-
-  // ADMIN: users table in admin panel
-  function updateAdminUsersTable(){
-    const tbody = $('admin-users-table').querySelector('tbody');
-    tbody.innerHTML = '';
-    const users = loadUsers();
-    users.forEach(u=>{
-      const tr = document.createElement('tr');
-      tr.insertCell().textContent = u.username;
-      tr.insertCell().textContent = u.fullname || '-';
-      tr.insertCell().textContent = u.class || '-';
-      const actions = tr.insertCell();
-      const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='Reset hasła';
-      btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6):'); if(!np) return; if(np.length<6){ alert('Za krótkie'); return; } const us = loadUsers(); const ix = us.findIndex(x=>x.username===u.username); us[ix].passwordHash = await hashPassword(np); saveUsers(us); alert('Hasło zresetowane.'); updateAdminUsersTable(); };
-      actions.appendChild(btnReset);
-      if(u.username !== 'admin'){
-        const btnDel = document.createElement('button'); btnDel.className='btn'; btnDel.style.background='linear-gradient(90deg,#ef4444,#f97316)'; btnDel.textContent='Usuń';
-        btnDel.onclick = ()=>{ if(confirm(`Usunąć konto ${u.username}?`)){ const us = loadUsers().filter(x=>x.username!==u.username); saveUsers(us); updateAdminUsersTable(); updateStudentsTable(); alert('Usunięto'); } };
-        actions.appendChild(btnDel);
-      }
-      tbody.appendChild(tr);
-    });
-  }
-
-  // ADMIN: pending rendering (cards)
-  function renderAdminPending(){
-    const list = $('admin-pending-list');
-    list.innerHTML = '';
-    const pending = loadPending();
-    if(pending.length === 0){ $('admin-pending-empty').style.display = 'block'; return; } else { $('admin-pending-empty').style.display = 'none'; }
-    pending.forEach(p=>{
-      const row = document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.padding='10px'; row.style.borderRadius='8px'; row.style.marginBottom='8px'; row.style.background='rgba(255,255,255,0.01)';
-      const left = document.createElement('div'); left.innerHTML = `<div style="font-weight:700">${p.fullname} <span class="small muted">(${p.username})</span></div><div class="small muted">Klasa: ${p.class} · ${new Date(p.createdAt).toLocaleString()}</div>`;
-      const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px';
-      const btnA = document.createElement('button'); btnA.className='btn'; btnA.textContent='Zatwierdź';
-      btnA.onclick = ()=>{ approvePending(p.id); };
-      const btnR = document.createElement('button'); btnR.className='btn ghost'; btnR.textContent='Odrzuć';
-      btnR.onclick = ()=>{ rejectPending(p.id); };
-      right.appendChild(btnA); right.appendChild(btnR);
-      row.appendChild(left); row.appendChild(right);
-      list.appendChild(row);
-    });
-  }
-
-  function approvePending(id){
-    const pending = loadPending();
-    const idx = pending.findIndex(p=>p.id===id);
-    if(idx === -1) return alert('Nie znaleziono.');
-    const p = pending[idx];
-    const users = loadUsers();
-    users.push({ id:'u-'+Date.now(), username:p.username, fullname:p.fullname, class:p.class || '2TIP', isAdmin:false, passwordHash:p.passwordHash, avatarData:null, theme:'default', createdAt: nowISO() });
-    saveUsers(users);
-    pending.splice(idx,1);
-    savePending(pending);
-    renderAdminPending(); updateAdminUsersTable(); updateStudentsTable(); alert('Zatwierdzono konto.');
-  }
-  function rejectPending(id){
-    if(!confirm('Odrzucić zgłoszenie?')) return;
-    let pending = loadPending();
-    pending = pending.filter(p=>p.id !== id);
-    savePending(pending);
-    renderAdminPending(); updatePendingBadge(); alert('Odrzucono zgłoszenie.');
-  }
-
-  // admin add sample
-  $('admin-add-sample').addEventListener('click', async ()=>{
-    const users = loadUsers();
-    const username = 'uczen' + (Math.floor(Math.random()*900)+100);
-    const ph = await hashPassword('haslo123');
-    users.push({ id:'u-'+Date.now(), username, fullname:'Jan Sample', class:'2TIP', isAdmin:false, passwordHash:ph, avatarData:null, theme:'default', createdAt: nowISO() });
-    saveUsers(users);
-    updateAdminUsersTable(); updateStudentsTable(); alert('Dodano próbne konto: ' + username + ' / haslo: haslo123');
-  });
-
-  // Admin tab switching
-  document.querySelectorAll('.admin-tabs .tab').forEach(tab=>{
-    tab.addEventListener('click', ()=>{
-      document.querySelectorAll('.admin-tabs .tab').forEach(t=>t.classList.remove('active'));
-      tab.classList.add('active');
-      const key = tab.dataset.tab;
-      openAdminTab(key);
-    });
-  });
-  function openAdminTab(key){
-    document.querySelectorAll('.admin-tab-content').forEach(c=>c.style.display='none');
-    const el = $(key);
-    if(el) el.style.display = 'block';
-    // refresh content per tab
-    if(key === 'admin-students-tab'){ updateAdminUsersTable(); }
-    if(key === 'admin-timetable-tab'){ renderAdminTimetable(); }
-    if(key === 'admin-pending-tab'){ renderAdminPending(); }
-  }
-
-  // utility functions for admin save timetable from admin table on blur
-  // attach blur handler after rendering
-  function attachAdminTableBlur(){
-    const table = $('admin-timetable-table');
-    if(!table) return;
-    for(let r=0;r<table.tBodies[0].rows.length;r++){
-      const row = table.tBodies[0].rows[r];
-      for(let c=0;c<row.cells.length;c++){
-        const cell = row.cells[c];
-        cell.addEventListener('blur', ()=> saveAdminTimetableFromTable() );
-      }
-    }
-  }
-
-  // make sure to re-attach after render
-  const origRenderAdminTimetable = renderAdminTimetable;
-  renderAdminTimetable = function(){ origRenderAdminTimetable(); attachAdminTableBlur(); };
-
-  // initial UI update functions used earlier
-  function updateAdminUsersTable(){ /* implemented above */ return updateAdminUsersTableInner(); }
-  // avoid function hoisting confusion: implement inner used earlier
-  function updateAdminUsersTableInner(){
-    const tbody = $('admin-users-table').querySelector('tbody');
-    tbody.innerHTML = '';
-    const users = loadUsers();
-    users.forEach(u=>{
-      const tr = document.createElement('tr');
-      tr.insertCell().textContent = u.username;
-      tr.insertCell().textContent = u.fullname || '-';
-      tr.insertCell().textContent = u.class || '-';
-      const actions = tr.insertCell();
-      const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='Reset hasła';
-      btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6):'); if(!np) return; if(np.length<6){ alert('Za krótkie'); return;} const us = loadUsers(); const ix = us.findIndex(x=>x.username===u.username); if(ix!==-1){ us[ix].passwordHash = await hashPassword(np); saveUsers(us); alert('Hasło zresetowane.'); updateAdminUsersTableInner(); } };
-      actions.appendChild(btnReset);
-      if(u.username !== 'admin'){
-        const btnDel = document.createElement('button'); btnDel.className='btn'; btnDel.style.background='linear-gradient(90deg,#ef4444,#f97316)'; btnDel.textContent='Usuń';
-        btnDel.onclick = ()=>{ if(confirm(`Usunąć konto ${u.username}?`)){ const us = loadUsers().filter(x=>x.username!==u.username); saveUsers(us); updateAdminUsersTableInner(); updateStudentsTable(); alert('Usunięto'); } };
-        actions.appendChild(btnDel);
-      }
-      tbody.appendChild(tr);
-    });
-  }
-
-  // wire admin timetable save buttons (already bound earlier via ids)
-  // but ensure elements exist
-  try{ if($('admin-save-timetable')) $('admin-save-timetable').addEventListener('click', ()=>{ saveAdminTimetableFromTable(); alert('Plan zapisany.'); }); }catch(e){}
-  try{ if($('admin-reset-timetable')) $('admin-reset-timetable').addEventListener('click', ()=>{ if(confirm('Przywrócić domyślny plan?')){ saveTimetable(defaultTimetable); renderAdminTimetable(); renderTimetable(); alert('Przywrócono.'); } }); }catch(e){}
-
-  // initial rendering helpers
-  function initTimetableStorage(){ if(!loadTimetable()){ saveTimetable(defaultTimetable); } }
-  initTimetableStorage();
-
-  // update admin pending badge and lists
-  function updatePendingBadgeAndUI(){
-    updatePendingBadge();
-    renderAdminPending();
-  }
-
-  // approve/reject functions already implemented above
-
-  // update students/ admin lists
-  function initUI(){
-    updateNavVisibility();
-    updateAdminUI();
-    renderTimetable();
-    updateStudentsTable();
-    updateStatusCard();
-    // choose initial view
-    if(currentUser){
-      showPanel(panelTimetable);
-      setActiveNav(navTimetable);
-    } else {
-      showPanel(panelLogin);
-      setActiveNav(navLogin);
-    }
-  }
-
-  // keep in sync across tabs
-  window.addEventListener('storage', (e)=>{
-    if([USERS_KEY,PENDING_KEY,TIMETABLE_KEY].includes(e.key)){
-      updateAdminUI(); renderTimetable(); updateStudentsTable(); updateStatusCard();
-    }
-  });
-
-  // run initialization
-  initUI();
-
-  // export some functions to console for debugging (optional)
-  window._2TIP = { loadUsers, loadPending, loadTimetable, saveTimetable, ensureAdmin };
-
-})(); // end IIFE
-</script>
-</body>
-  <script type="module">
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyASvV16vCshSmD6p0EtP7G6y10ERwUuYbE",
   authDomain: "tip-28c08.firebaseapp.com",
@@ -959,9 +282,462 @@ const firebaseConfig = {
   measurementId: "G-4ECL21HTZG"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-</script>
-</html>
+const db = getFirestore(app);
 
+/* ========== Helpers & local UI references ========== */
+const $ = id => document.getElementById(id);
+const nowISO = () => new Date().toISOString();
+
+/* SHA-256 hashing (same as wcześniej) */
+async function hashPassword(password){
+  const enc = new TextEncoder();
+  const data = enc.encode(password);
+  const buf = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+/* ========== Firestore wrappers ========== */
+// Collections: "users" (zatwierdzone konta, id = username), "pending" (oczekujące), "timetable" (jednostkowy dokument "2TIP")
+async function loadUsersFirestore(){
+  const q = query(collection(db, 'users'));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+async function getUserByUsername(username){
+  const d = await getDoc(doc(db,'users', username));
+  return d.exists() ? { id:d.id, ...d.data() } : null;
+}
+async function saveUserFirestore(user){
+  // user.username used as doc id
+  await setDoc(doc(db,'users', user.username), user);
+}
+async function deleteUserFirestore(username){
+  await deleteDoc(doc(db,'users', username));
+}
+
+// pending
+async function addPendingFirestore(pendingObj){
+  await addDoc(collection(db,'pending'), pendingObj);
+}
+async function loadPendingFirestore(){
+  const snap = await getDocs(collection(db,'pending'));
+  return snap.docs.map(d=>({ id:d.id, ...d.data() }));
+}
+async function deletePendingFirestore(docId){
+  await deleteDoc(doc(db,'pending', docId));
+}
+
+// timetable (single doc id "2TIP")
+async function loadTimetableFirestore(){
+  const d = await getDoc(doc(db,'timetable','2TIP'));
+  return d.exists() ? d.data() : null;
+}
+async function saveTimetableFirestore(obj){
+  await setDoc(doc(db,'timetable','2TIP'), obj);
+}
+
+/* ========== Default data setup ========== */
+const defaultTimetable = {
+  slots: [
+    {time:'8:00-8:45', pon:'J. polski', wt:'Matematyka', sr:'Fizyka', czw:'WF', pt:'Informatyka'},
+    {time:'8:55-9:40', pon:'Matematyka', wt:'J. angielski', sr:'Chemia', czw:'BHP', pt:'Historia'},
+    {time:'9:50-10:35', pon:'Informatyka', wt:'Fizyka', sr:'J. polski', czw:'Matematyka', pt:'Technologia'},
+    {time:'10:55-11:40', pon:'WF', wt:'Historia', sr:'J. angielski', czw:'Geografia', pt:'Biologia'}
+  ]
+};
+
+async function ensureDefaultTimetable(){
+  const tt = await loadTimetableFirestore();
+  if(!tt) await saveTimetableFirestore(defaultTimetable);
+}
+
+/* ========== Ensure default admin user exists in Firestore ========== */
+async function ensureDefaultAdmin(){
+  const admin = await getUserByUsername('admin');
+  if(!admin){
+    const ph = await hashPassword('Admin!234');
+    const adminObj = {
+      username: 'admin',
+      fullname: 'Administrator',
+      class: 'admin',
+      isAdmin: true,
+      passwordHash: ph,
+      avatarData: null,
+      theme: 'default',
+      createdAt: nowISO()
+    };
+    await saveUserFirestore(adminObj);
+  }
+}
+
+/* ========== Session (kept in sessionStorage for UI) ========== */
+let currentUser = null;
+function saveSession(username){
+  if(username) sessionStorage.setItem('2tip_session_v2', JSON.stringify({ username }));
+  else sessionStorage.removeItem('2tip_session_v2');
+}
+async function loadSession(){
+  try{
+    const s = sessionStorage.getItem('2tip_session_v2');
+    if(!s) return;
+    const obj = JSON.parse(s);
+    if(obj && obj.username){
+      const u = await getUserByUsername(obj.username);
+      if(u) currentUser = u;
+    }
+  }catch(e){}
+}
+
+/* ========== UI helpers ========== */
+const navLogin = $('nav-login'), navTimetable = $('nav-timetable'), navStudents = $('nav-students'), navSettings = $('nav-settings'), navAdmin = $('nav-admin'), navAbout = $('nav-about'), navLogout = $('nav-logout');
+const panelLogin = $('panel-login'), panelTimetable = $('panel-timetable'), panelStudents = $('panel-students'), panelSettings = $('panel-settings'), panelAdmin = $('panel-admin'), panelAbout = $('panel-about');
+
+function setActiveNav(btn){ document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); }
+function hideAllPanels(){ [panelLogin, panelTimetable, panelStudents, panelSettings, panelAdmin, panelAbout].forEach(p=>p&&(p.style.display='none')); }
+function showPanel(panel){ hideAllPanels(); panel.style.display='block'; }
+
+/* Update nav visible based on currentUser */
+async function updateNavVisibility(){
+  const logged = !!currentUser;
+  navLogin.style.display = logged ? 'none' : 'block';
+  navTimetable.style.display = logged ? 'block' : 'none';
+  navStudents.style.display = logged ? 'block' : 'none';
+  navSettings.style.display = logged ? 'block' : 'none';
+  navAbout.style.display = logged ? 'block' : 'none';
+  navLogout.style.display = logged ? 'block' : 'none';
+  navAdmin.style.display = (logged && currentUser && currentUser.isAdmin) ? 'block' : 'none';
+  updateStatusCard();
+  renderStudents(); updateAdminPendingCount();
+}
+
+/* Status card & userControls */
+function updateStatusCard(){
+  const statusBox = $('status-box'); statusBox.innerHTML = '';
+  const welcomeText = $('welcome-text'); const userControls = $('user-controls');
+  userControls.innerHTML = '';
+  if(currentUser){
+    const wrapper = document.createElement('div'); wrapper.style.display='flex'; wrapper.style.gap='10px'; wrapper.style.alignItems='center';
+    const avat = document.createElement('div'); avat.className='avatar';
+    if(currentUser.avatarData){ const img = document.createElement('img'); img.src = currentUser.avatarData; avat.appendChild(img); } else { avat.textContent = (currentUser.fullname||currentUser.username||'U').slice(0,2).toUpperCase(); }
+    wrapper.appendChild(avat);
+    const txt = document.createElement('div'); txt.innerHTML = `<div style="font-weight:700">${currentUser.fullname || currentUser.username}</div><div class="small muted">${currentUser.username} · ${currentUser.class}</div>`;
+    wrapper.appendChild(txt);
+    statusBox.appendChild(wrapper);
+
+    welcomeText.textContent = `Witaj, ${currentUser.fullname || currentUser.username}`;
+    const logoutBtn = document.createElement('button'); logoutBtn.className='btn ghost'; logoutBtn.textContent='Wyloguj';
+    logoutBtn.onclick = ()=>{ currentUser = null; saveSession(null); updateNavVisibility(); showPanel(panelLogin); setActiveNav(navLogin); };
+    userControls.appendChild(logoutBtn);
+
+    if(currentUser.isAdmin){
+      const adminBtn = document.createElement('button'); adminBtn.className='btn'; adminBtn.textContent='Panel admina';
+      adminBtn.onclick = ()=>{ setActiveNav(navAdmin); showPanel(panelAdmin); openAdminTab('admin-students-tab'); };
+      userControls.appendChild(adminBtn);
+    }
+
+    // apply theme
+    if(currentUser.theme && currentUser.theme === 'light'){ document.body.classList.add('theme-light'); } else { document.body.classList.remove('theme-light'); }
+  } else {
+    statusBox.innerHTML = '<div class="small">Nie jesteś zalogowany</div>';
+    welcomeText.textContent = 'Nie zalogowano';
+    document.body.classList.remove('theme-light');
+  }
+}
+
+/* ========== FORM HANDLERS: login / register ========== */
+$('form-login').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  $('login-msg').textContent = '';
+  const user = $('login-username').value.trim();
+  const pass = $('login-password').value;
+  if(!user || !pass){ $('login-msg').textContent = 'Wypełnij pola.'; return; }
+  try{
+    const found = await getUserByUsername(user);
+    if(!found){ $('login-msg').textContent = 'Nie znaleziono użytkownika (może oczekuje na zatwierdzenie).'; return; }
+    const ph = await hashPassword(pass);
+    if(ph !== found.passwordHash){ $('login-msg').textContent = 'Błędne hasło.'; return; }
+    currentUser = found;
+    saveSession(currentUser.username);
+    $('login-password').value='';
+    updateNavVisibility();
+    setActiveNav(navTimetable);
+    showPanel(panelTimetable);
+    renderTimetable();
+  }catch(err){
+    console.error(err); $('login-msg').textContent = 'Błąd logowania.'; 
+  }
+});
+
+$('form-register').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  $('reg-msg').textContent = '';
+  const username = $('reg-username').value.trim();
+  const fullname = $('reg-fullname').value.trim();
+  const klass = $('reg-class').value;
+  const pass = $('reg-password').value;
+  if(!username || !fullname || !pass){ $('reg-msg').textContent = 'Uzupełnij wszystkie pola.'; return; }
+  if(pass.length < 6){ $('reg-msg').textContent = 'Hasło musi mieć min 6 znaków.'; return; }
+  try{
+    const existing = await getUserByUsername(username);
+    const pending = await loadPendingFirestore();
+    if(existing || pending.some(p=>p.username.toLowerCase()===username.toLowerCase())){ $('reg-msg').textContent = 'Nazwa użytkownika zajęta lub oczekuje.'; return; }
+    const ph = await hashPassword(pass);
+    await addPendingFirestore({ username, fullname, class: klass, passwordHash: ph, createdAt: nowISO() });
+    $('reg-msg').textContent = 'Zarejestrowano — konto oczekuje na zatwierdzenie.';
+    $('form-register').reset();
+    renderAdminPending(); updatePendingBadge();
+  }catch(err){
+    console.error(err); $('reg-msg').textContent = 'Błąd rejestracji.';
+  }
+});
+
+$('btn-clear-register').addEventListener('click', ()=>{ $('reg-username').value=''; $('reg-fullname').value=''; $('reg-password').value=''; $('reg-msg').textContent=''; });
+$('btn-show-register').addEventListener('click', ()=>{ $('reg-username').focus(); });
+
+/* ========== TIMETABLE rendering (user) ========== */
+async function renderTimetable(){
+  const tb = $('timetable-table'); if(!tb) return;
+  const body = tb.querySelector('tbody'); body.innerHTML = '';
+  let t = await loadTimetableFirestore();
+  if(!t){ await saveTimetableFirestore(defaultTimetable); t = defaultTimetable; }
+  t.slots.forEach(slot=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${slot.time}</td><td>${slot.pon}</td><td>${slot.wt}</td><td>${slot.sr}</td><td>${slot.czw}</td><td>${slot.pt}</td>`;
+    body.appendChild(tr);
+  });
+  // show edit controls only for admin
+  const controls = $('timetable-controls');
+  if(currentUser && currentUser.isAdmin) controls.style.display='block'; else controls.style.display='none';
+}
+
+/* ========== ADMIN: editable timetable ========== */
+async function renderAdminTimetable(){
+  const table = $('admin-timetable-table'); const body = table.querySelector('tbody'); body.innerHTML = '';
+  const t = await loadTimetableFirestore() || defaultTimetable;
+  t.slots.forEach((slot, rowIdx)=>{
+    const tr = document.createElement('tr');
+    const tdTime = document.createElement('td'); tdTime.textContent = slot.time; tr.appendChild(tdTime);
+    ['pon','wt','sr','czw','pt'].forEach(dayKey=>{
+      const td = document.createElement('td');
+      td.textContent = slot[dayKey] || '';
+      td.setAttribute('contenteditable','true');
+      td.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); ev.target.blur(); } });
+      td.addEventListener('blur', ()=> saveAdminTimetableFromTable());
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+async function saveAdminTimetableFromTable(){
+  const table = $('admin-timetable-table'); if(!table) return;
+  const body = table.querySelector('tbody');
+  const newSlots = [];
+  for(let i=0;i<body.rows.length;i++){
+    const r = body.rows[i];
+    const cols = Array.from(r.cells).map(c=>c.textContent.trim());
+    newSlots.push({ time: cols[0] || '', pon: cols[1]||'', wt: cols[2]||'', sr: cols[3]||'', czw: cols[4]||'', pt: cols[5]||'' });
+  }
+  await saveTimetableFirestore({ slots: newSlots });
+  await renderTimetable();
+}
+
+/* Timetable controls */
+$('btn-add-row').addEventListener('click', async ()=>{
+  if(!currentUser || !currentUser.isAdmin){ alert('Tylko admin.'); return; }
+  const t = await loadTimetableFirestore() || defaultTimetable;
+  t.slots.push({ time:'nowa', pon:'', wt:'', sr:'', czw:'', pt:'' });
+  await saveTimetableFirestore(t); await renderTimetable(); await renderAdminTimetable();
+});
+$('btn-reset-timetable').addEventListener('click', async ()=>{
+  if(!confirm('Przywrócić domyślny plan lekcji?')) return;
+  await saveTimetableFirestore(defaultTimetable); await renderTimetable(); await renderAdminTimetable();
+});
+$('admin-save-timetable').addEventListener('click', async ()=>{ await saveAdminTimetableFromTable(); alert('Plan zapisany.'); });
+$('admin-reset-timetable').addEventListener('click', async ()=>{ if(confirm('Przywrócić domyślny plan?')){ await saveTimetableFirestore(defaultTimetable); await renderAdminTimetable(); await renderTimetable(); alert('Przywrócono.'); } });
+
+/* ========== Students listing ========== */
+async function renderStudents(filter=''){
+  const tbody = $('students-table').querySelector('tbody'); tbody.innerHTML = '';
+  const users = await loadUsersFirestore();
+  const filtered = users.filter(u => !u.isAdmin && (u.username + ' ' + (u.fullname||'')).toLowerCase().includes(filter.toLowerCase()));
+  filtered.forEach(u=>{
+    const tr = document.createElement('tr');
+    const tdAvatar = document.createElement('td');
+    const avat = document.createElement('div'); avat.className='avatar';
+    if(u.avatarData){ const img = document.createElement('img'); img.src = u.avatarData; avat.appendChild(img);} else { avat.textContent = (u.fullname || u.username).slice(0,2).toUpperCase(); }
+    tdAvatar.appendChild(avat); tr.appendChild(tdAvatar);
+    tr.insertCell().textContent = u.username; tr.insertCell().textContent = u.fullname || '-'; tr.insertCell().textContent = u.class || '-';
+    tr.insertCell().textContent = u.isAdmin ? 'Admin' : 'Uczeń';
+    const actions = tr.insertCell();
+    const btnView = document.createElement('button'); btnView.className='btn ghost'; btnView.textContent='Szczegóły';
+    btnView.onclick = ()=> { alert(`Login: ${u.username}\nImię: ${u.fullname}\nKlasa: ${u.class}\nUtworzono: ${u.createdAt}`); };
+    actions.appendChild(btnView);
+    if(currentUser && currentUser.isAdmin){
+      if(u.username !== 'admin'){
+        const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='Resetuj hasło';
+        btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6 zn.):'); if(!np) return; if(np.length<6){ alert('Za krótkie.'); return;} const ph = await hashPassword(np); const us = await loadUsersFirestore(); const userObj = us.find(x=>x.username===u.username); userObj.passwordHash = ph; await saveUserFirestore(userObj); alert('Hasło zresetowane.'); };
+        const btnDelete = document.createElement('button'); btnDelete.className='btn'; btnDelete.style.background='linear-gradient(90deg,#ef4444,#f97316)'; btnDelete.textContent='Usuń';
+        btnDelete.onclick = async ()=>{ if(confirm(`Usunąć konto ${u.username}?`)){ await deleteUserFirestore(u.username); await renderStudents(); await updateAdminUsersTable(); alert('Usunięto'); } };
+        actions.appendChild(btnReset); actions.appendChild(btnDelete);
+      }
+    }
+    tbody.appendChild(tr);
+  });
+  $('students-count').textContent = (await loadUsersFirestore()).filter(u=>!u.isAdmin).length;
+}
+$('search-students').addEventListener('input', (e)=> renderStudents(e.target.value));
+
+/* ========== Settings (avatar upload stored as base64 in users doc for simplicity) ========== */
+$('avatar-file').addEventListener('change', (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  if(file.size > 2 * 1024 * 1024){ alert('Plik za duży (max 2MB)'); return; }
+  const reader = new FileReader();
+  reader.onload = async function(ev){
+    const data = ev.target.result;
+    const u = await getUserByUsername(currentUser.username);
+    if(u){ u.avatarData = data; await saveUserFirestore(u); currentUser = u; updateStatusCard(); populateSettings(); renderStudents(); updateAdminUsersTable(); }
+  };
+  reader.readAsDataURL(file);
+});
+$('btn-reset-avatar').addEventListener('click', async ()=>{
+  if(!confirm('Resetować awatar?')) return;
+  const u = await getUserByUsername(currentUser.username); if(u){ u.avatarData = null; await saveUserFirestore(u); currentUser = u; updateStatusCard(); populateSettings(); renderStudents(); }
+});
+$('btn-change-pass').addEventListener('click', async ()=>{
+  const cur = $('settings-current-pass').value; const nw = $('settings-new-pass').value;
+  if(!cur || !nw){ $('settings-msg').textContent = 'Wypełnij pola.'; return; } if(nw.length<6){ $('settings-msg').textContent='Hasło min 6 znaków.'; return; }
+  const phcur = await hashPassword(cur);
+  if(phcur !== currentUser.passwordHash){ $('settings-msg').textContent='Błędne aktualne hasło.'; return; }
+  const newHash = await hashPassword(nw); const u = await getUserByUsername(currentUser.username); u.passwordHash = newHash; await saveUserFirestore(u); currentUser = u; $('settings-current-pass').value=''; $('settings-new-pass').value=''; $('settings-msg').textContent='Hasło zmienione.'; alert('Hasło zmienione.');
+});
+$('btn-save-theme').addEventListener('click', async ()=>{
+  const sel = $('settings-theme').value; const u = await getUserByUsername(currentUser.username); u.theme = sel; await saveUserFirestore(u); currentUser = u; if(sel==='light') document.body.classList.add('theme-light'); else document.body.classList.remove('theme-light'); alert('Motyw zapisany.');
+});
+$('btn-reset-theme').addEventListener('click', async ()=>{ const u = await getUserByUsername(currentUser.username); u.theme='default'; await saveUserFirestore(u); currentUser = u; document.body.classList.remove('theme-light'); $('settings-theme').value='default'; alert('Przywrócono motyw.'); });
+
+function populateSettings(){
+  if(!currentUser) return;
+  $('settings-fullname').value = currentUser.fullname || '';
+  const prev = $('settings-avatar-preview'); prev.innerHTML = '';
+  if(currentUser.avatarData){ const img = document.createElement('img'); img.src = currentUser.avatarData; prev.appendChild(img); } else { prev.textContent = (currentUser.fullname||currentUser.username||'U').slice(0,2).toUpperCase(); }
+  $('settings-theme').value = currentUser.theme || 'default';
+  $('settings-msg').textContent = '';
+}
+
+/* ========== Admin UIs (users, pending, timetable) ========== */
+async function updateAdminUsersTable(){
+  const tbody = $('admin-users-table').querySelector('tbody'); tbody.innerHTML = '';
+  const users = await loadUsersFirestore();
+  users.forEach(u=>{
+    const tr = document.createElement('tr');
+    tr.insertCell().textContent = u.username; tr.insertCell().textContent = u.fullname || '-'; tr.insertCell().textContent = u.class || '-';
+    const actions = tr.insertCell();
+    const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='Reset hasła';
+    btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6):'); if(!np) return; if(np.length<6){ alert('Za krótkie'); return;} u.passwordHash = await hashPassword(np); await saveUserFirestore(u); alert('Hasło zresetowane.'); updateAdminUsersTable(); };
+    actions.appendChild(btnReset);
+    if(u.username !== 'admin'){
+      const btnDel = document.createElement('button'); btnDel.className='btn'; btnDel.style.background='linear-gradient(90deg,#ef4444,#f97316)'; btnDel.textContent='Usuń';
+      btnDel.onclick = async ()=>{ if(confirm(`Usunąć konto ${u.username}?`)){ await deleteUserFirestore(u.username); updateAdminUsersTable(); renderStudents(); alert('Usunięto'); } };
+      actions.appendChild(btnDel);
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+/* Pending list */
+async function renderAdminPending(){
+  const list = $('admin-pending-list'); list.innerHTML = '';
+  const pending = await loadPendingFirestore();
+  if(pending.length === 0){ $('admin-pending-empty').style.display='block'; return; } else { $('admin-pending-empty').style.display='none'; }
+  pending.forEach(p=>{
+    const row = document.createElement('div'); row.style.display='flex'; row.style.justifyContent='space-between'; row.style.alignItems='center'; row.style.padding='10px'; row.style.borderRadius='8px'; row.style.marginBottom='8px'; row.style.background='rgba(255,255,255,0.01)';
+    const left = document.createElement('div'); left.innerHTML = `<div style="font-weight:700">${p.fullname} <span class="small muted">(${p.username})</span></div><div class="small muted">Klasa: ${p.class} · ${new Date(p.createdAt).toLocaleString()}</div>`;
+    const right = document.createElement('div'); right.style.display='flex'; right.style.gap='8px';
+    const btnA = document.createElement('button'); btnA.className='btn'; btnA.textContent='Zatwierdź';
+    btnA.onclick = async ()=>{ await approvePending(p.id); };
+    const btnR = document.createElement('button'); btnR.className='btn ghost'; btnR.textContent='Odrzuć';
+    btnR.onclick = async ()=>{ await rejectPending(p.id); };
+    right.appendChild(btnA); right.appendChild(btnR);
+    row.appendChild(left); row.appendChild(right);
+    list.appendChild(row);
+  });
+}
+async function approvePending(docId){
+  const pendingSnap = await getDoc(doc(db,'pending', docId));
+  if(!pendingSnap.exists()){ alert('Nie znaleziono zgłoszenia.'); return; }
+  const p = pendingSnap.data();
+  // create user with username as doc id
+  const newUser = {
+    username: p.username,
+    fullname: p.fullname,
+    class: p.class || '2TIP',
+    isAdmin: false,
+    passwordHash: p.passwordHash,
+    avatarData: null,
+    theme: 'default',
+    createdAt: nowISO()
+  };
+  await saveUserFirestore(newUser);
+  await deletePendingFirestore(docId);
+  await renderAdminPending(); await updateAdminUsersTable(); await renderStudents(); alert('Konto zatwierdzone.');
+}
+async function rejectPending(docId){
+  if(!confirm('Odrzucić zgłoszenie?')) return;
+  await deletePendingFirestore(docId);
+  await renderAdminPending(); updatePendingBadge(); alert('Odrzucono zgłoszenie.');
+}
+
+async function updatePendingBadge(){
+  const pending = await loadPendingFirestore();
+  // not showing badge in nav, but admin panel shows list/empty message
+  $('admin-pending-empty').style.display = pending.length ? 'none' : 'block';
+}
+async function updateAdminPendingCount(){ await updatePendingBadge(); }
+
+/* Admin sample user */
+$('admin-add-sample').addEventListener('click', async ()=>{
+  const username = 'uczen' + (Math.floor(Math.random()*900)+100);
+  const ph = await hashPassword('haslo123');
+  const newUser = { username, fullname:'Jan Sample', class:'2TIP', isAdmin:false, passwordHash:ph, avatarData:null, theme:'default', createdAt: nowISO() };
+  await saveUserFirestore(newUser);
+  await updateAdminUsersTable(); await renderStudents(); alert('Dodano próbne konto: ' + username + ' / haslo: haslo123');
+});
+
+/* Admin tab switching */
+document.querySelectorAll('.admin-tabs .tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.admin-tabs .tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const key = tab.dataset.tab;
+    openAdminTab(key);
+  });
+});
+function openAdminTab(key){
+  document.querySelectorAll('.admin-tab-content').forEach(c=>c.style.display='none');
+  const el = $(key);
+  if(el) el.style.display='block';
+  if(key === 'admin-students-tab') updateAdminUsersTable();
+  if(key === 'admin-timetable-tab') renderAdminTimetable();
+  if(key === 'admin-pending-tab') renderAdminPending();
+}
+
+/* ========== Real-time updates (onSnapshot) ==========
+   - Updates admin pending list and users list in realtime across tabs
+*/
+onSnapshot(collection(db,'pending'), snap => { renderAdminPending(); updatePendingBadge(); });
+onSnapshot(collection(db,'users'), snap => { updateAdminUsersTable(); renderStudents(); updateNavVisibility(); });
+
+/* ========== Initialization sequence ========== */
+await ensureDefaultAdmin();
+await ensureDefaultTimetable();
+await loadSession(); // restore session if present
+await updateNavVisibility();
+if(currentUser){ showPanel(panelTimetable); setActiveNav(navTimetable); renderTimetable(); } else { showPanel(panelLogin); setActiveNav(navLogin); }
+
+/* ========== Expose some helpers for debugging in console ========== */
+window._2TIP = { loadUsersFirestore, loadPendingFirestore, loadTimetableFirestore, saveTimetableFirestore };
+
+</script>
+</body>
+</html>
