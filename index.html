@@ -6,7 +6,7 @@
 <title>2TIP — Strona klasowa (Firestore)</title>
 <link rel="icon" href="data:," />
 <style>
-  /* (CSS jak wcześniej - ciemny, fioletowo-niebieski motyw) */
+  /* ---- wygląd (jak prośba) ---- */
   :root{
     --bg-0:#060714; --bg-1:#0f1724; --card: rgba(255,255,255,0.03);
     --glass: rgba(255,255,255,0.02); --accent1:#7c3aed; --accent2:#06b6d4;
@@ -171,7 +171,7 @@
         <div>
           <label class="small muted">Zmień awatar</label><br>
           <input id="avatar-file" type="file" accept="image/*">
-          <div class="small muted">Plik max 2MB — zapis w Firestore Storage (opcjonalnie) lub jako base64 w dokumencie.</div>
+          <div class="small muted">Plik max 2MB — zapis w Firestore jako base64 (prosto i szybko).</div>
         </div>
       </div>
 
@@ -200,7 +200,7 @@
       </div>
     </section>
 
-    <!-- ADMIN PANEL (same page, clean tabs) -->
+    <!-- ADMIN PANEL -->
     <section id="panel-admin" class="card" style="display:none">
       <h3>Panel administratora</h3>
       <div class="muted small">Szybkie zarządzanie klasą</div>
@@ -267,7 +267,7 @@
 
 <!-- Firebase + App logic -->
 <script type="module">
-/* ========== Firebase initialization (modular SDK) ========== */
+/* ================= Firebase init (modular) ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-app.js";
 import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc, query, where, onSnapshot, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js";
 
@@ -285,11 +285,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ========== Helpers & local UI references ========== */
+/* ================= Helpers ================= */
 const $ = id => document.getElementById(id);
 const nowISO = () => new Date().toISOString();
 
-/* SHA-256 hashing (same as wcześniej) */
 async function hashPassword(password){
   const enc = new TextEncoder();
   const data = enc.encode(password);
@@ -297,26 +296,28 @@ async function hashPassword(password){
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
 }
 
-/* ========== Firestore wrappers ========== */
-// Collections: "users" (zatwierdzone konta, id = username), "pending" (oczekujące), "timetable" (jednostkowy dokument "2TIP")
-async function loadUsersFirestore(){
-  const q = query(collection(db, 'users'));
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
+/* ================= Firestore wrappers ================= */
+/* collections:
+   - users (doc id = username)
+   - pending (auto docs)
+   - timetable (doc id = "2TIP")
+*/
 async function getUserByUsername(username){
+  if(!username) return null;
   const d = await getDoc(doc(db,'users', username));
-  return d.exists() ? { id:d.id, ...d.data() } : null;
+  return d.exists() ? { id: d.id, ...d.data() } : null;
+}
+async function loadUsersFirestore(){
+  const snap = await getDocs(collection(db,'users'));
+  return snap.docs.map(d=>({ id:d.id, ...d.data() }));
 }
 async function saveUserFirestore(user){
-  // user.username used as doc id
   await setDoc(doc(db,'users', user.username), user);
 }
 async function deleteUserFirestore(username){
   await deleteDoc(doc(db,'users', username));
 }
 
-// pending
 async function addPendingFirestore(pendingObj){
   await addDoc(collection(db,'pending'), pendingObj);
 }
@@ -324,11 +325,10 @@ async function loadPendingFirestore(){
   const snap = await getDocs(collection(db,'pending'));
   return snap.docs.map(d=>({ id:d.id, ...d.data() }));
 }
-async function deletePendingFirestore(docId){
-  await deleteDoc(doc(db,'pending', docId));
+async function deletePendingFirestore(id){
+  await deleteDoc(doc(db,'pending', id));
 }
 
-// timetable (single doc id "2TIP")
 async function loadTimetableFirestore(){
   const d = await getDoc(doc(db,'timetable','2TIP'));
   return d.exists() ? d.data() : null;
@@ -337,7 +337,7 @@ async function saveTimetableFirestore(obj){
   await setDoc(doc(db,'timetable','2TIP'), obj);
 }
 
-/* ========== Default data setup ========== */
+/* ================= Default data ================= */
 const defaultTimetable = {
   slots: [
     {time:'8:00-8:45', pon:'J. polski', wt:'Matematyka', sr:'Fizyka', czw:'WF', pt:'Informatyka'},
@@ -348,38 +348,25 @@ const defaultTimetable = {
 };
 
 async function ensureDefaultTimetable(){
-  const tt = await loadTimetableFirestore();
-  if(!tt) await saveTimetableFirestore(defaultTimetable);
+  const t = await loadTimetableFirestore();
+  if(!t) await saveTimetableFirestore(defaultTimetable);
 }
 
-/* ========== Ensure default admin user exists in Firestore ========== */
 async function ensureDefaultAdmin(){
   const admin = await getUserByUsername('admin');
   if(!admin){
     const ph = await hashPassword('Admin!234');
-    const adminObj = {
-      username: 'admin',
-      fullname: 'Administrator',
-      class: 'admin',
-      isAdmin: true,
-      passwordHash: ph,
-      avatarData: null,
-      theme: 'default',
-      createdAt: nowISO()
-    };
+    const adminObj = { username:'admin', fullname:'Administrator', class:'admin', isAdmin:true, passwordHash:ph, avatarData:null, theme:'default', createdAt: nowISO() };
     await saveUserFirestore(adminObj);
   }
 }
 
-/* ========== Session (kept in sessionStorage for UI) ========== */
+/* ================= Session ================= */
 let currentUser = null;
-function saveSession(username){
-  if(username) sessionStorage.setItem('2tip_session_v2', JSON.stringify({ username }));
-  else sessionStorage.removeItem('2tip_session_v2');
-}
+function saveSession(username){ if(username) sessionStorage.setItem('2tip_session', JSON.stringify({username})); else sessionStorage.removeItem('2tip_session'); }
 async function loadSession(){
   try{
-    const s = sessionStorage.getItem('2tip_session_v2');
+    const s = sessionStorage.getItem('2tip_session');
     if(!s) return;
     const obj = JSON.parse(s);
     if(obj && obj.username){
@@ -389,7 +376,7 @@ async function loadSession(){
   }catch(e){}
 }
 
-/* ========== UI helpers ========== */
+/* ================= UI refs & helpers ================= */
 const navLogin = $('nav-login'), navTimetable = $('nav-timetable'), navStudents = $('nav-students'), navSettings = $('nav-settings'), navAdmin = $('nav-admin'), navAbout = $('nav-about'), navLogout = $('nav-logout');
 const panelLogin = $('panel-login'), panelTimetable = $('panel-timetable'), panelStudents = $('panel-students'), panelSettings = $('panel-settings'), panelAdmin = $('panel-admin'), panelAbout = $('panel-about');
 
@@ -397,7 +384,7 @@ function setActiveNav(btn){ document.querySelectorAll('nav button').forEach(b=>b
 function hideAllPanels(){ [panelLogin, panelTimetable, panelStudents, panelSettings, panelAdmin, panelAbout].forEach(p=>p&&(p.style.display='none')); }
 function showPanel(panel){ hideAllPanels(); panel.style.display='block'; }
 
-/* Update nav visible based on currentUser */
+/* update nav visibility based on currentUser */
 async function updateNavVisibility(){
   const logged = !!currentUser;
   navLogin.style.display = logged ? 'none' : 'block';
@@ -408,10 +395,11 @@ async function updateNavVisibility(){
   navLogout.style.display = logged ? 'block' : 'none';
   navAdmin.style.display = (logged && currentUser && currentUser.isAdmin) ? 'block' : 'none';
   updateStatusCard();
-  renderStudents(); updateAdminPendingCount();
+  await renderStudents();
+  await updatePendingBadge();
 }
 
-/* Status card & userControls */
+/* status card */
 function updateStatusCard(){
   const statusBox = $('status-box'); statusBox.innerHTML = '';
   const welcomeText = $('welcome-text'); const userControls = $('user-controls');
@@ -436,8 +424,8 @@ function updateStatusCard(){
       userControls.appendChild(adminBtn);
     }
 
-    // apply theme
     if(currentUser.theme && currentUser.theme === 'light'){ document.body.classList.add('theme-light'); } else { document.body.classList.remove('theme-light'); }
+
   } else {
     statusBox.innerHTML = '<div class="small">Nie jesteś zalogowany</div>';
     welcomeText.textContent = 'Nie zalogowano';
@@ -445,7 +433,16 @@ function updateStatusCard(){
   }
 }
 
-/* ========== FORM HANDLERS: login / register ========== */
+/* ================= Navigation handlers ================= */
+navLogin.addEventListener('click', ()=>{ setActiveNav(navLogin); showPanel(panelLogin); $('page-title') && ($('page-title').textContent='Logowanie / Rejestracja'); });
+navTimetable.addEventListener('click', async ()=>{ setActiveNav(navTimetable); showPanel(panelTimetable); $('page-title') && ($('page-title').textContent='Plan lekcji'); await renderTimetable(); });
+navStudents.addEventListener('click', async ()=>{ setActiveNav(navStudents); showPanel(panelStudents); $('page-title') && ($('page-title').textContent='Uczniowie'); await renderStudents(); });
+navSettings.addEventListener('click', async ()=>{ setActiveNav(navSettings); showPanel(panelSettings); $('page-title') && ($('page-title').textContent='Ustawienia'); populateSettings(); });
+navAdmin.addEventListener('click', async ()=>{ setActiveNav(navAdmin); showPanel(panelAdmin); $('page-title') && ($('page-title').textContent='Panel administratora'); await updateAdminUI(); openAdminTab('admin-students-tab'); });
+navAbout.addEventListener('click', ()=>{ setActiveNav(navAbout); showPanel(panelAbout); $('page-title') && ($('page-title').textContent='O klasie'); });
+navLogout.addEventListener('click', ()=>{ currentUser = null; saveSession(null); updateNavVisibility(); showPanel(panelLogin); setActiveNav(navLogin); });
+
+/* ================= Login / Register ================= */
 $('form-login').addEventListener('submit', async (e)=>{
   e.preventDefault();
   $('login-msg').textContent = '';
@@ -463,7 +460,7 @@ $('form-login').addEventListener('submit', async (e)=>{
     updateNavVisibility();
     setActiveNav(navTimetable);
     showPanel(panelTimetable);
-    renderTimetable();
+    await renderTimetable();
   }catch(err){
     console.error(err); $('login-msg').textContent = 'Błąd logowania.'; 
   }
@@ -486,16 +483,16 @@ $('form-register').addEventListener('submit', async (e)=>{
     await addPendingFirestore({ username, fullname, class: klass, passwordHash: ph, createdAt: nowISO() });
     $('reg-msg').textContent = 'Zarejestrowano — konto oczekuje na zatwierdzenie.';
     $('form-register').reset();
-    renderAdminPending(); updatePendingBadge();
+    await renderAdminPending();
+    await updatePendingBadge();
   }catch(err){
     console.error(err); $('reg-msg').textContent = 'Błąd rejestracji.';
   }
 });
-
 $('btn-clear-register').addEventListener('click', ()=>{ $('reg-username').value=''; $('reg-fullname').value=''; $('reg-password').value=''; $('reg-msg').textContent=''; });
 $('btn-show-register').addEventListener('click', ()=>{ $('reg-username').focus(); });
 
-/* ========== TIMETABLE rendering (user) ========== */
+/* ================= Timetable (user view) ================= */
 async function renderTimetable(){
   const tb = $('timetable-table'); if(!tb) return;
   const body = tb.querySelector('tbody'); body.innerHTML = '';
@@ -506,16 +503,15 @@ async function renderTimetable(){
     tr.innerHTML = `<td>${slot.time}</td><td>${slot.pon}</td><td>${slot.wt}</td><td>${slot.sr}</td><td>${slot.czw}</td><td>${slot.pt}</td>`;
     body.appendChild(tr);
   });
-  // show edit controls only for admin
   const controls = $('timetable-controls');
   if(currentUser && currentUser.isAdmin) controls.style.display='block'; else controls.style.display='none';
 }
 
-/* ========== ADMIN: editable timetable ========== */
+/* ================= Admin editable timetable ================= */
 async function renderAdminTimetable(){
   const table = $('admin-timetable-table'); const body = table.querySelector('tbody'); body.innerHTML = '';
   const t = await loadTimetableFirestore() || defaultTimetable;
-  t.slots.forEach((slot, rowIdx)=>{
+  t.slots.forEach((slot)=>{
     const tr = document.createElement('tr');
     const tdTime = document.createElement('td'); tdTime.textContent = slot.time; tr.appendChild(tdTime);
     ['pon','wt','sr','czw','pt'].forEach(dayKey=>{
@@ -541,22 +537,18 @@ async function saveAdminTimetableFromTable(){
   await saveTimetableFirestore({ slots: newSlots });
   await renderTimetable();
 }
-
-/* Timetable controls */
+/* timetable controls */
 $('btn-add-row').addEventListener('click', async ()=>{
   if(!currentUser || !currentUser.isAdmin){ alert('Tylko admin.'); return; }
   const t = await loadTimetableFirestore() || defaultTimetable;
   t.slots.push({ time:'nowa', pon:'', wt:'', sr:'', czw:'', pt:'' });
   await saveTimetableFirestore(t); await renderTimetable(); await renderAdminTimetable();
 });
-$('btn-reset-timetable').addEventListener('click', async ()=>{
-  if(!confirm('Przywrócić domyślny plan lekcji?')) return;
-  await saveTimetableFirestore(defaultTimetable); await renderTimetable(); await renderAdminTimetable();
-});
+$('btn-reset-timetable').addEventListener('click', async ()=>{ if(!confirm('Przywrócić domyślny plan lekcji?')) return; await saveTimetableFirestore(defaultTimetable); await renderTimetable(); await renderAdminTimetable(); });
 $('admin-save-timetable').addEventListener('click', async ()=>{ await saveAdminTimetableFromTable(); alert('Plan zapisany.'); });
 $('admin-reset-timetable').addEventListener('click', async ()=>{ if(confirm('Przywrócić domyślny plan?')){ await saveTimetableFirestore(defaultTimetable); await renderAdminTimetable(); await renderTimetable(); alert('Przywrócono.'); } });
 
-/* ========== Students listing ========== */
+/* ================= Students list ================= */
 async function renderStudents(filter=''){
   const tbody = $('students-table').querySelector('tbody'); tbody.innerHTML = '';
   const users = await loadUsersFirestore();
@@ -576,7 +568,7 @@ async function renderStudents(filter=''){
     if(currentUser && currentUser.isAdmin){
       if(u.username !== 'admin'){
         const btnReset = document.createElement('button'); btnReset.className='btn'; btnReset.textContent='Resetuj hasło';
-        btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6 zn.):'); if(!np) return; if(np.length<6){ alert('Za krótkie.'); return;} const ph = await hashPassword(np); const us = await loadUsersFirestore(); const userObj = us.find(x=>x.username===u.username); userObj.passwordHash = ph; await saveUserFirestore(userObj); alert('Hasło zresetowane.'); };
+        btnReset.onclick = async ()=>{ const np = prompt('Nowe hasło (min 6 zn.):'); if(!np) return; if(np.length<6){ alert('Za krótkie.'); return;} const ph = await hashPassword(np); u.passwordHash = ph; await saveUserFirestore(u); alert('Hasło zresetowane.'); };
         const btnDelete = document.createElement('button'); btnDelete.className='btn'; btnDelete.style.background='linear-gradient(90deg,#ef4444,#f97316)'; btnDelete.textContent='Usuń';
         btnDelete.onclick = async ()=>{ if(confirm(`Usunąć konto ${u.username}?`)){ await deleteUserFirestore(u.username); await renderStudents(); await updateAdminUsersTable(); alert('Usunięto'); } };
         actions.appendChild(btnReset); actions.appendChild(btnDelete);
@@ -588,7 +580,7 @@ async function renderStudents(filter=''){
 }
 $('search-students').addEventListener('input', (e)=> renderStudents(e.target.value));
 
-/* ========== Settings (avatar upload stored as base64 in users doc for simplicity) ========== */
+/* ================= Settings ================= */
 $('avatar-file').addEventListener('change', (e)=>{
   const file = e.target.files[0]; if(!file) return;
   if(file.size > 2 * 1024 * 1024){ alert('Plik za duży (max 2MB)'); return; }
@@ -600,20 +592,9 @@ $('avatar-file').addEventListener('change', (e)=>{
   };
   reader.readAsDataURL(file);
 });
-$('btn-reset-avatar').addEventListener('click', async ()=>{
-  if(!confirm('Resetować awatar?')) return;
-  const u = await getUserByUsername(currentUser.username); if(u){ u.avatarData = null; await saveUserFirestore(u); currentUser = u; updateStatusCard(); populateSettings(); renderStudents(); }
-});
-$('btn-change-pass').addEventListener('click', async ()=>{
-  const cur = $('settings-current-pass').value; const nw = $('settings-new-pass').value;
-  if(!cur || !nw){ $('settings-msg').textContent = 'Wypełnij pola.'; return; } if(nw.length<6){ $('settings-msg').textContent='Hasło min 6 znaków.'; return; }
-  const phcur = await hashPassword(cur);
-  if(phcur !== currentUser.passwordHash){ $('settings-msg').textContent='Błędne aktualne hasło.'; return; }
-  const newHash = await hashPassword(nw); const u = await getUserByUsername(currentUser.username); u.passwordHash = newHash; await saveUserFirestore(u); currentUser = u; $('settings-current-pass').value=''; $('settings-new-pass').value=''; $('settings-msg').textContent='Hasło zmienione.'; alert('Hasło zmienione.');
-});
-$('btn-save-theme').addEventListener('click', async ()=>{
-  const sel = $('settings-theme').value; const u = await getUserByUsername(currentUser.username); u.theme = sel; await saveUserFirestore(u); currentUser = u; if(sel==='light') document.body.classList.add('theme-light'); else document.body.classList.remove('theme-light'); alert('Motyw zapisany.');
-});
+$('btn-reset-avatar').addEventListener('click', async ()=>{ if(!confirm('Resetować awatar?')) return; const u = await getUserByUsername(currentUser.username); if(u){ u.avatarData = null; await saveUserFirestore(u); currentUser = u; updateStatusCard(); populateSettings(); renderStudents(); } });
+$('btn-change-pass').addEventListener('click', async ()=>{ const cur = $('settings-current-pass').value; const nw = $('settings-new-pass').value; if(!cur || !nw){ $('settings-msg').textContent = 'Wypełnij pola.'; return; } if(nw.length<6){ $('settings-msg').textContent='Hasło min 6 znaków.'; return; } const phcur = await hashPassword(cur); if(phcur !== currentUser.passwordHash){ $('settings-msg').textContent='Błędne aktualne hasło.'; return; } const newHash = await hashPassword(nw); const u = await getUserByUsername(currentUser.username); u.passwordHash = newHash; await saveUserFirestore(u); currentUser = u; $('settings-current-pass').value=''; $('settings-new-pass').value=''; $('settings-msg').textContent='Hasło zmienione.'; alert('Hasło zmienione.'); });
+$('btn-save-theme').addEventListener('click', async ()=>{ const sel = $('settings-theme').value; const u = await getUserByUsername(currentUser.username); u.theme = sel; await saveUserFirestore(u); currentUser = u; if(sel==='light') document.body.classList.add('theme-light'); else document.body.classList.remove('theme-light'); alert('Motyw zapisany.'); });
 $('btn-reset-theme').addEventListener('click', async ()=>{ const u = await getUserByUsername(currentUser.username); u.theme='default'; await saveUserFirestore(u); currentUser = u; document.body.classList.remove('theme-light'); $('settings-theme').value='default'; alert('Przywrócono motyw.'); });
 
 function populateSettings(){
@@ -625,7 +606,7 @@ function populateSettings(){
   $('settings-msg').textContent = '';
 }
 
-/* ========== Admin UIs (users, pending, timetable) ========== */
+/* ================= Admin UI ================= */
 async function updateAdminUsersTable(){
   const tbody = $('admin-users-table').querySelector('tbody'); tbody.innerHTML = '';
   const users = await loadUsersFirestore();
@@ -645,7 +626,6 @@ async function updateAdminUsersTable(){
   });
 }
 
-/* Pending list */
 async function renderAdminPending(){
   const list = $('admin-pending-list'); list.innerHTML = '';
   const pending = await loadPendingFirestore();
@@ -667,17 +647,7 @@ async function approvePending(docId){
   const pendingSnap = await getDoc(doc(db,'pending', docId));
   if(!pendingSnap.exists()){ alert('Nie znaleziono zgłoszenia.'); return; }
   const p = pendingSnap.data();
-  // create user with username as doc id
-  const newUser = {
-    username: p.username,
-    fullname: p.fullname,
-    class: p.class || '2TIP',
-    isAdmin: false,
-    passwordHash: p.passwordHash,
-    avatarData: null,
-    theme: 'default',
-    createdAt: nowISO()
-  };
+  const newUser = { username: p.username, fullname: p.fullname, class: p.class || '2TIP', isAdmin:false, passwordHash: p.passwordHash, avatarData: null, theme:'default', createdAt: nowISO() };
   await saveUserFirestore(newUser);
   await deletePendingFirestore(docId);
   await renderAdminPending(); await updateAdminUsersTable(); await renderStudents(); alert('Konto zatwierdzone.');
@@ -685,57 +655,31 @@ async function approvePending(docId){
 async function rejectPending(docId){
   if(!confirm('Odrzucić zgłoszenie?')) return;
   await deletePendingFirestore(docId);
-  await renderAdminPending(); updatePendingBadge(); alert('Odrzucono zgłoszenie.');
+  await renderAdminPending(); await updatePendingBadge(); alert('Odrzucono zgłoszenie.');
 }
 
-async function updatePendingBadge(){
-  const pending = await loadPendingFirestore();
-  // not showing badge in nav, but admin panel shows list/empty message
-  $('admin-pending-empty').style.display = pending.length ? 'none' : 'block';
-}
-async function updateAdminPendingCount(){ await updatePendingBadge(); }
+async function updatePendingBadge(){ const pending = await loadPendingFirestore(); $('admin-pending-empty').style.display = pending.length ? 'none' : 'block'; }
+async function updateAdminUI(){ await updateAdminUsersTable(); await renderAdminTimetable(); await renderAdminPending(); await updatePendingBadge(); }
 
-/* Admin sample user */
-$('admin-add-sample').addEventListener('click', async ()=>{
-  const username = 'uczen' + (Math.floor(Math.random()*900)+100);
-  const ph = await hashPassword('haslo123');
-  const newUser = { username, fullname:'Jan Sample', class:'2TIP', isAdmin:false, passwordHash:ph, avatarData:null, theme:'default', createdAt: nowISO() };
-  await saveUserFirestore(newUser);
-  await updateAdminUsersTable(); await renderStudents(); alert('Dodano próbne konto: ' + username + ' / haslo: haslo123');
-});
+/* admin sample user */
+$('admin-add-sample').addEventListener('click', async ()=>{ const username = 'uczen' + (Math.floor(Math.random()*900)+100); const ph = await hashPassword('haslo123'); const newUser = { username, fullname:'Jan Sample', class:'2TIP', isAdmin:false, passwordHash:ph, avatarData:null, theme:'default', createdAt: nowISO() }; await saveUserFirestore(newUser); await updateAdminUsersTable(); await renderStudents(); alert('Dodano próbne konto: ' + username + ' / haslo: haslo123'); });
 
-/* Admin tab switching */
-document.querySelectorAll('.admin-tabs .tab').forEach(tab=>{
-  tab.addEventListener('click', ()=>{
-    document.querySelectorAll('.admin-tabs .tab').forEach(t=>t.classList.remove('active'));
-    tab.classList.add('active');
-    const key = tab.dataset.tab;
-    openAdminTab(key);
-  });
-});
-function openAdminTab(key){
-  document.querySelectorAll('.admin-tab-content').forEach(c=>c.style.display='none');
-  const el = $(key);
-  if(el) el.style.display='block';
-  if(key === 'admin-students-tab') updateAdminUsersTable();
-  if(key === 'admin-timetable-tab') renderAdminTimetable();
-  if(key === 'admin-pending-tab') renderAdminPending();
-}
+/* admin tabs */
+document.querySelectorAll('.admin-tabs .tab').forEach(tab=>{ tab.addEventListener('click', ()=>{ document.querySelectorAll('.admin-tabs .tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active'); const key = tab.dataset.tab; openAdminTab(key); }); });
+function openAdminTab(key){ document.querySelectorAll('.admin-tab-content').forEach(c=>c.style.display='none'); const el = $(key); if(el) el.style.display='block'; if(key==='admin-students-tab') updateAdminUsersTable(); if(key==='admin-timetable-tab') renderAdminTimetable(); if(key==='admin-pending-tab') renderAdminPending(); }
 
-/* ========== Real-time updates (onSnapshot) ==========
-   - Updates admin pending list and users list in realtime across tabs
-*/
+/* realtime listeners */
 onSnapshot(collection(db,'pending'), snap => { renderAdminPending(); updatePendingBadge(); });
 onSnapshot(collection(db,'users'), snap => { updateAdminUsersTable(); renderStudents(); updateNavVisibility(); });
 
-/* ========== Initialization sequence ========== */
+/* init */
 await ensureDefaultAdmin();
 await ensureDefaultTimetable();
-await loadSession(); // restore session if present
+await loadSession();
 await updateNavVisibility();
-if(currentUser){ showPanel(panelTimetable); setActiveNav(navTimetable); renderTimetable(); } else { showPanel(panelLogin); setActiveNav(navLogin); }
+if(currentUser){ showPanel(panelTimetable); setActiveNav(navTimetable); await renderTimetable(); } else { showPanel(panelLogin); setActiveNav(navLogin); }
 
-/* ========== Expose some helpers for debugging in console ========== */
+/* expose debug */
 window._2TIP = { loadUsersFirestore, loadPendingFirestore, loadTimetableFirestore, saveTimetableFirestore };
 
 </script>
